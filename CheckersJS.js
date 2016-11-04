@@ -1,3 +1,10 @@
+/*
+
+================= BOARD SETUP =================
+
+*/
+
+
 var board = $("#checkerBoard");
 
 var row = ['a','b','c','d','e','f','g','h'];
@@ -24,23 +31,23 @@ for(x = 0; x < row.length; x++){
 
 	for (y = 0; y < col.length; y++){
 
-		var position = row[x]+col[y];
+		var xyCords = row[x]+col[y];
 		
 		if (reverse){
 
 			if ( !(y % 2) ){
-				legalSpaces.push(position);
+				legalSpaces.push(xyCords);
 			}
 
-			$("#row-" + row[x]).append("<div data-position='" + position + "' class='square'></div>");
+			$("#row-" + row[x]).append("<div data-position='" + xyCords + "' class='square'></div>");
 
 		} else {
 
 			if ( y % 2 ){
-				legalSpaces.push(position);
+				legalSpaces.push(xyCords);
 			}
 
-			$("#row-" + row[x]).prepend("<div data-position='" + position + "' class='square'></div>");
+			$("#row-" + row[x]).prepend("<div data-position='" + xyCords + "' class='square'></div>");
 
 		}
 		
@@ -62,61 +69,15 @@ $.each(blackStart,function(key,val){
 	blackPiece.append('<div data-color="black" class="black"></div>');
 });
 
-//Return the color and position of piece clicked.
-if (!(selected)){
-	$('.square').on('click',function(){
-
-		var self = $(this);
-		var cords = self.data("position");
-		var position = $("[data-position='" + cords + "']");
-		var color = self.find("div").data("color") ? self.find("div").data("color") : '';
-
-		if ( !(isEmpty(self)) ) {
-			$(document).trigger('selected',[position,color]);
-		}
-
-	});
-}
 
 
 
 
-$(document).on('selected',function(event,position,color){
+/*
 
-	selected = true;
+================= GAME FUNCTIONS =================
 
-	if (selected){
-
-		$('.square').on('click',function(event){
-
-			var self = $(this);
-			var cords = self.data("position");
-
-			// console.log(position);
-			if ( isEmpty(self) && legalMove(cords) ) {
-				self.append("<div data-color='" + color + "' class='" + color + "'></div>");
-				position.children().remove();
-				selected = false;
-			} else {
-				console.log("No");
-			}
-
-		});
-
-	}
-
-
-});
-// 	if ( !(legalMove(position)) ){
-// 		console.log("You cannot move there!");
-// 	};
-// 	if ( isEmpty(self) && legalMove(position) ){
-// 		console.log("Available");
-// 	}else {
-// 		if(color){console.log(color);}
-// 	}
-	
-// })
+*/
 
 function isEmpty(position){
 	if ( position.children().length ) {
@@ -135,3 +96,76 @@ function legalMove(position){
 function select(position){
 
 }
+
+function selectPiece(){
+	var self = $(this);
+	var cords = self.data("position");
+	var position = "[data-position='" + cords + "']";
+	var color = self.find("div").data("color") ? self.find("div").data("color") : '';
+
+	if ( !(isEmpty(self)) ) {
+		selected = true;
+		$('.square').off('click');
+		self.children().toggleClass('selected');
+		$(document).trigger('selected',[position,color]);
+	}
+
+};
+
+// function move(position, color){
+
+// 	var self = $(this);
+// 	var cords = self.data("position");
+
+// 	if ( isEmpty(self) && legalMove(cords) ) {
+// 		self.append("<div data-color='" + color + "' class='" + color + "'></div>");
+// 		$(position).children().remove();
+// 		selected = false;
+// 		$('.square').off('click');
+// 		$('.square').on('click', selectPiece)
+// 	} else {
+// 		console.log("No");
+// 	}
+
+// }
+
+
+/*
+
+================= GAME LOGIC =================
+
+*/
+
+
+//Return the color and position of piece clicked.
+//And Pass it to trigger selected.
+if (!(selected)){
+
+	$('.square').on('click', selectPiece);
+}
+
+
+$(document).on('selected',function(event,position,color){
+
+	if (selected){
+
+		$('.square').on('click', function(){
+
+			var self = $(this);
+			var cords = self.data("position");
+
+			if ( isEmpty(self) && legalMove(cords) ) {
+				self.append("<div data-color='" + color + "' class='" + color + "'></div>");
+				$(position).children().remove();
+				selected = false;
+				$('.square').off('click');
+				$('.square').on('click', selectPiece)
+			} else {
+				console.log("No");
+			}
+
+		} );
+
+	}
+
+});
