@@ -1,0 +1,49 @@
+#checkerBoard {
+  border: 3px solid black;
+  width: 600px;
+  margin: 0 auto;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.8); }
+
+h1 {
+  text-align: center; }
+
+.parent {
+  display: flex; }
+  .parent .square {
+    width: 75px;
+    height: 75px;
+    display: flex;
+    align-items: center;
+    justify-content: center; }
+    .parent .square .red {
+      background-color: red;
+      border-radius: 100%;
+      width: 50px;
+      height: 50px;
+      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.8); }
+    .parent .square .black {
+      background-color: gray;
+      border-radius: 100%;
+      width: 50px;
+      height: 50px;
+      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.8); }
+
+.selected {
+  box-shadow: 0 0 10px 5px rgba(255, 255, 0, 0.8) !important; }
+
+.parent:nth-child(odd) {
+  flex-direction: row-reverse; }
+
+.square:nth-child(2n+1) {
+  background-color: black; }
+
+.square:nth-child(2n+2) {
+  background-color: white; }
+  .square:nth-child(2n+2) .red:nth-child(2n+1) {
+    background-color: transparent;
+    box-shadow: none; }
+  .square:nth-child(2n+2) .black:nth-child(2n+1) {
+    background-color: transparent;
+    box-shadow: none; }
+
+/*# sourceMappingURL=style.css.map */

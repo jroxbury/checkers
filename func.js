@@ -11,3 +11,12 @@
 		});
 	})
 })(jQuery)
+
+
+// function isEmpty() {
+	jQuery('.child').on('click',function(){
+		console.log('Hi ther');
+	})
+// }
+
+// isEmpty();
