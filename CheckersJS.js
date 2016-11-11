@@ -14,6 +14,7 @@ var blackStart = ['f1','f3','f5','f7','g2','g4','g6','g8','h1','h3','h5','h7'];
 var legalSpaces = [];
 var reverse = '';
 var selected = false;
+var turn = true;
 
 /*
 * Making the board
@@ -93,8 +94,13 @@ function legalMove(position){
 	return false;
 }
 
-function select(position){
-
+function checkTurn(color) {
+	if (turn && color == "black") {
+		return "black";
+	}
+	if (!turn && color == "red") {
+		return "red";
+	}
 }
 
 function selectPiece(){
@@ -102,13 +108,28 @@ function selectPiece(){
 	var cords = self.data("position");
 	var position = "[data-position='" + cords + "']";
 	var color = self.find("div").data("color") ? self.find("div").data("color") : '';
+	console.log(color);
+	if (checkTurn(color) == "black") {
 
-	if ( !(isEmpty(self)) ) {
-		selected = true;
-		$('.square').off('click');
-		self.children().toggleClass('selected');
-		$(document).trigger('selected',[position,color]);
+		if ( !(isEmpty(self)) ) {
+			selected = true;
+			$('.square').off('click');
+			self.children().toggleClass('selected');
+			$(document).trigger('selected',[position,color]);
+		}
+
 	}
+	if (checkTurn(color) == "red") {
+
+		if ( !(isEmpty(self)) ) {
+			selected = true;
+			$('.square').off('click');
+			self.children().toggleClass('selected');
+			$(document).trigger('selected',[position,color]);
+		}
+
+	}
+	
 
 };
 
@@ -158,6 +179,7 @@ $(document).on('selected',function(event,position,color){
 				self.append("<div data-color='" + color + "' class='" + color + "'></div>");
 				$(position).children().remove();
 				selected = false;
+				turn = turn ? false : true;
 				$('.square').off('click');
 				$('.square').on('click', selectPiece)
 			} else {
