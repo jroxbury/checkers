@@ -46,7 +46,7 @@ var board = {
 	},
 
 	legalMove: function(position) {
-		if ( this.legalSpaces.includes(position) ){
+		if ( this.legalSpaces.includes(position) ) {
 			return true;
 		}
 		return false;
@@ -67,19 +67,27 @@ var board = {
 		}
 	},
 
-	getPosition: function(click){
-		return $(click).data("position");
-	},
-
 	toggleTurn: function(){
 		return this.turn === true ? this.turn = false : this.turn = true;
 	},
 
 	setSelectedPosition: function(pos) {
-
 		this.selectedPosition = pos;
-
 	},
+
+
+	// Dom functions
+	getPosition: function(click){
+		return $(click).data("position");
+	},
+
+	selectedState: function(click) {
+		$(click).children().toggleClass("selected");
+	},
+
+	removePiece: function() {
+
+	}
 }
 
 
@@ -139,9 +147,9 @@ $.each(board.setup.blackStart, function(key,val) {
 
 
 $('.square').on('click', function(){
-
+	var _click = this;
 	//Get click position.
-	var pos = board.getPosition(this);
+	var pos = board.getPosition(_click);
 
 	//Check if click is valid position.
 	if (board.legalMove(pos)){
@@ -153,9 +161,11 @@ $('.square').on('click', function(){
 		if ( board.checkTurn(color) ) {
 
 			//Switch Turn.
-			// board.toggleTurn();
+			board.toggleTurn();
 
 			board.setSelectedPosition(pos);
+
+			board.selectedState(_click);
 
 		}
 	}
