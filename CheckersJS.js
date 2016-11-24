@@ -4,6 +4,9 @@
 
 */
 
+
+var dom = $("#checkerBoard");
+
 //Need to make function to chage board state.
 //Set selected postion to empty
 //Add new piece/color to new positin.
@@ -58,37 +61,22 @@ var board = {
 		}
 	},
 
-	selectPiece: function (){
-		var self = $(this);
-		var cords = self.data("position");
-		var position = "[data-position='" + cords + "']";
-		var color = self.find("div").data("color") ? self.find("div").data("color") : '';
-		if (this.checkTurn(color) == "black") {
-
-			if ( !(this.isOpen(cords)) ) {
-				this.selected = true;
-				$('.square').off('click');
-				self.children().toggleClass('selected');
-				$(document).trigger('selected',[position,color]);
-			}
-
+	getColor: function (pos){
+		if(this.state[pos] != undefined && this.state[pos].length){
+			return this.state[pos] === "R" ? "red" : "black";
 		}
-		if (checkTurn(color) == "red") {
-
-			if ( !(isOpen(cords)) ) {
-				this.selected = true;
-				$('.square').off('click');
-				self.children().toggleClass('selected');
-				$(document).trigger('selected',[position,color]);
-			}
-
-		}
-		
-
 	},
+
+	getPosition: function(click){
+		return $(click).data("position");
+	},
+
+	toggleTurn: function(){
+		return this.turn === true ? this.turn = false : this.turn = true;
+	}
 }
 
-var dom = $("#checkerBoard");
+
 
 /*
 * Making the board
@@ -144,36 +132,25 @@ $.each(board.setup.blackStart, function(key,val) {
 */
 
 
-//Return the color and position of piece clicked.
-//And Pass it to trigger selected.
-if (!(board.selected)){
+$('.square').on('click', function(){
 
-	$('.square').on('click', board.selectPiece);
-}
+	//Get click position.
+	var pos = board.getPosition(this);
 
+	//Check if click is valid position.
+	if (board.legalMove(pos)){
 
-$(document).on('selected',function(event,position,color){
+		//Return click color.
+		var color = board.getColor(pos);
 
-	if (board.selected){
+		//Black turn && Black click || Red Turn && Red click.
+		if ( board.checkTurn(color) ) {
 
-		$('.square').on('click', function(){
+			//Switch Turn.
+			board.toggleTurn();
 
-			var self = $(this);
-			var cords = self.data("position");
-
-			if ( board.isOpen(cords) ) {
-				self.append(board[color]);
-				$(position).children().remove();
-				board.selected = false;
-				board.turn = board.turn ? false : true;
-				$('.square').off('click');
-				$('.square').on('click', selectPiece)
-			} else {
-				console.log("No");
-			}
-
-		} );
-
+		}
 	}
+	
 
 });
