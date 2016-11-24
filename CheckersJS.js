@@ -36,8 +36,8 @@ var board = {
 	turn: true,
 	red:"<div data-color='red' class='red'></div>",
 	black:"<div data-color='black' class='black'></div>",
+	selectedPosition: "",
 
-	
 	isOpen: function(pos) {
 		if( this.state[pos] != undefined && !(this.state[pos].length) ){
 			return true;
@@ -73,7 +73,13 @@ var board = {
 
 	toggleTurn: function(){
 		return this.turn === true ? this.turn = false : this.turn = true;
-	}
+	},
+
+	setSelectedPosition: function(pos) {
+
+		this.selectedPosition = pos;
+
+	},
 }
 
 
@@ -147,7 +153,9 @@ $('.square').on('click', function(){
 		if ( board.checkTurn(color) ) {
 
 			//Switch Turn.
-			board.toggleTurn();
+			// board.toggleTurn();
+
+			board.setSelectedPosition(pos);
 
 		}
 	}
