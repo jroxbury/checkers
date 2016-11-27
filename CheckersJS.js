@@ -37,6 +37,7 @@ var board = {
 	red:"<div data-color='red' class='red'></div>",
 	black:"<div data-color='black' class='black'></div>",
 	selectedPosition: "",
+	selectedColor: "",
 
 	isOpen: function(pos) {
 		if( this.state[pos] != undefined && !(this.state[pos].length) ){
@@ -68,11 +69,17 @@ var board = {
 	},
 
 	toggleTurn: function(){
+		this.selectedPosition = "";
 		return this.turn === true ? this.turn = false : this.turn = true;
 	},
 
-	setSelectedPosition: function(pos) {
+	storeClick: function(pos,color) {
 		this.selectedPosition = pos;
+		this.selectedColor = color;
+	},
+
+	clearClick: function() {
+		this.selectedPosition = "";
 	},
 
 
@@ -81,13 +88,21 @@ var board = {
 		return $(click).data("position");
 	},
 
-	selectedState: function(click) {
+	toggleSelected: function(click) {
 		$(click).children().toggleClass("selected");
 	},
 
-	removePiece: function() {
+	removePiece: function(selectedPosition) {
+		$("[data-position=" + selectedPosition + "]").children().remove();
+		this.state[selectedPosition] = "";
+	},
 
-	}
+	setPiece: function(click) {
+		$("[data-position=" + click + "]").append(this[this.selectedColor]);
+		var color;
+		this.selectedColor == "red" ? color = "R" : color = "B";
+		this.state[click] = color;
+	},
 }
 
 
@@ -151,8 +166,8 @@ $('.square').on('click', function(){
 	//Get click position.
 	var pos = board.getPosition(_click);
 
-	//Check if click is valid position.
-	if (board.legalMove(pos)){
+	//If valid position && Piece not yet selected.
+	if (board.legalMove(pos) && !board.selectedPosition ){
 
 		//Return click color.
 		var color = board.getColor(pos);
@@ -160,15 +175,18 @@ $('.square').on('click', function(){
 		//Black turn && Black click || Red Turn && Red click.
 		if ( board.checkTurn(color) ) {
 
-			//Switch Turn.
-			board.toggleTurn();
+			//Store inital click position.
+			board.storeClick(pos,color);
 
-			board.setSelectedPosition(pos);
-
-			board.selectedState(_click);
+			//Toggle CSS selected state.
+			board.toggleSelected(_click);
 
 		}
 	}
-	
 
+	if( board.legalMove(pos) && board.isOpen(pos) && board.selectedPosition ) {
+		board.removePiece(board.selectedPosition);
+		board.setPiece(pos);
+		board.toggleTurn();
+	}
 });
