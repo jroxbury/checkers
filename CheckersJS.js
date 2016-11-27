@@ -88,8 +88,8 @@ var board = {
 		return $(click).data("position");
 	},
 
-	toggleSelected: function(click) {
-		$(click).children().toggleClass("selected");
+	toggleSelected: function(pos) {
+		$("[data-position=" + pos + "]").children().toggleClass("selected");
 	},
 
 	removePiece: function(selectedPosition) {
@@ -166,7 +166,10 @@ $('.square').on('click', function(){
 	//Get click position.
 	var pos = board.getPosition(_click);
 
-	//If valid position && Piece not yet selected.
+	/*
+	*	If player hasn't selected a piece yet.
+	*	If valid position && Piece not yet selected.
+	*/
 	if (board.legalMove(pos) && !board.selectedPosition ){
 
 		//Return click color.
@@ -179,14 +182,35 @@ $('.square').on('click', function(){
 			board.storeClick(pos,color);
 
 			//Toggle CSS selected state.
-			board.toggleSelected(_click);
+			board.toggleSelected(pos);
 
+			return;
 		}
 	}
 
-	if( board.legalMove(pos) && board.isOpen(pos) && board.selectedPosition ) {
+	/*
+	*	If piece selected and click on piece of same color.
+	*	Allow player to switch piece if already selected.
+	*/
+	if( board.selectedColor === board.getColor(pos) ){
+		//Turn off selected state of previous piece
+		board.toggleSelected(board.selectedPosition);
+		//Store new piece position
+		board.storeClick(pos,board.selectedColor);
+		//Toggle selected state for new piece.
+		board.toggleSelected(pos);
+		return;
+	}
+
+	//If piece already selected and the click is open space, and its a legal move. The intention is to move the piece.
+	if( board.selectedPosition && board.isOpen(pos) && board.legalMove(pos) ) {
+
+		//Clear previous position
 		board.removePiece(board.selectedPosition);
+		//Set piece in new position.
 		board.setPiece(pos);
+		//Switch turn to next player.
 		board.toggleTurn();
 	}
+	
 });
