@@ -13,15 +13,25 @@ var dom = $("#checkerBoard");
 var board = {
 
 	state: {
-		a2:"R", a4:"R", a6:"R", a8:"R",
-		b1:"R", b3:"R", b5:"R", b7:"R",
-		c2:"R", c4:"R", c6:"R", c8:"R",
-		d1: "", d3: "", d5: "", d7: "",
-		e2: "", e4: "", e6: "", e8: "",
-		f1:"B", f3:"B", f5:"B", f7:"B",
-		g2:"B", g4:"B", g6:"B", g8:"B",
-		h1:"B", h3:"B", h5:"B", h7:"B",
+		a2:["R",1], a4:["R",1], a6:["R",1], a8:["R",1],
+		b1:["R",2], b3:["R",2], b5:["R",2], b7:["R",2],
+		c2:["R",3], c4:["R",3], c6:["R",3], c8:["R",3],
+		d1:[ "",4], d3:[ "",4], d5:[ "",4], d7:[ "",4],
+		e2:[ "",5], e4:[ "",5], e6:[ "",5], e8:[ "",5],
+		f1:["B",6], f3:["B",6], f5:["B",6], f7:["B",6],
+		g2:["B",7], g4:["B",7], g6:["B",7], g8:["B",7],
+		h1:["B",8], h3:["B",8], h5:["B",8], h7:["B",8],
 	},
+	// rows: {
+	// 	1:["a2","a4","a6","a8"],
+	// 	2:["b1","b3","b5","b7"],
+	// 	3:["c2","c4","c6","c8"],
+	// 	4:["d1","d3","d5","d7"],
+	// 	5:["e2","e4","e6","e8"],
+	// 	6:["f1","f3","f5","f7"],
+	// 	7:["g2","g4","g6","g8"],
+	// 	8:["h1","h3","h5","h7"],
+	// },
 
 	setup: {
 		row: ['a','b','c','d','e','f','g','h'],
@@ -40,7 +50,7 @@ var board = {
 	selectedColor: "",
 
 	isOpen: function(pos) {
-		if( this.state[pos] != undefined && !(this.state[pos].length) ){
+		if( this.state[pos][0] != undefined && !(this.state[pos][0].length) ){
 			return true;
 		}
 		return false;
@@ -63,8 +73,8 @@ var board = {
 	},
 
 	getColor: function (pos){
-		if(this.state[pos] != undefined && this.state[pos].length){
-			return this.state[pos] === "R" ? "red" : "black";
+		if(this.state[pos][0] != undefined && this.state[pos][0].length){
+			return this.state[pos][0] === "R" ? "red" : "black";
 		}
 	},
 
@@ -94,14 +104,14 @@ var board = {
 
 	removePiece: function(selectedPosition) {
 		$("[data-position=" + selectedPosition + "]").children().remove();
-		this.state[selectedPosition] = "";
+		this.state[selectedPosition][0] = "";
 	},
 
 	setPiece: function(click) {
 		$("[data-position=" + click + "]").append(this[this.selectedColor]);
 		var color;
 		this.selectedColor == "red" ? color = "R" : color = "B";
-		this.state[click] = color;
+		this.state[click][0] = color;
 	},
 }
 
@@ -212,5 +222,5 @@ $('.square').on('click', function(){
 		//Switch turn to next player.
 		board.toggleTurn();
 	}
-	
+
 });
