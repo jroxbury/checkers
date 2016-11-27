@@ -13,25 +13,65 @@ var dom = $("#checkerBoard");
 var board = {
 
 	state: {
-		a2:["R",1], a4:["R",1], a6:["R",1], a8:["R",1],
-		b1:["R",2], b3:["R",2], b5:["R",2], b7:["R",2],
-		c2:["R",3], c4:["R",3], c6:["R",3], c8:["R",3],
-		d1:[ "",4], d3:[ "",4], d5:[ "",4], d7:[ "",4],
-		e2:[ "",5], e4:[ "",5], e6:[ "",5], e8:[ "",5],
-		f1:["B",6], f3:["B",6], f5:["B",6], f7:["B",6],
-		g2:["B",7], g4:["B",7], g6:["B",7], g8:["B",7],
-		h1:["B",8], h3:["B",8], h5:["B",8], h7:["B",8],
+		a2:{color:"R", row:1, index:1, king:false},
+		a4:{color:"R", row:1, index:2, king:false},
+		a6:{color:"R", row:1, index:3, king:false},
+		a8:{color:"R", row:1, index:4, king:false},
+
+		b1:{color:"R", row:2, index:1, king:false},
+		b3:{color:"R", row:2, index:2, king:false},
+		b5:{color:"R", row:2, index:3, king:false},
+		b7:{color:"R", row:2, index:4, king:false},
+
+		c2:{color:"R", row:3, index:1, king:false},
+		c4:{color:"R", row:3, index:2, king:false},
+		c6:{color:"R", row:3, index:3, king:false},
+		c8:{color:"R", row:3, index:4, king:false},
+
+		d1:{color:"" , row:4, index:1, king:false},
+		d3:{color:"" , row:4, index:2, king:false},
+		d5:{color:"" , row:4, index:3, king:false},
+		d7:{color:"" , row:4, index:4, king:false},
+
+		e2:{color:"" , row:5, index:1, king:false},
+		e4:{color:"" , row:5, index:2, king:false},
+		e6:{color:"" , row:5, index:3, king:false},
+		e8:{color:"" , row:5, index:4, king:false},
+
+		f1:{color:"B", row:6, index:1, king:false},
+		f3:{color:"B", row:6, index:2, king:false},
+		f5:{color:"B", row:6, index:3, king:false},
+		f7:{color:"B", row:6, index:4, king:false},
+
+		g2:{color:"B", row:7, index:1, king:false},
+		g4:{color:"B", row:7, index:2, king:false},
+		g6:{color:"B", row:7, index:3, king:false},
+		g8:{color:"B", row:7, index:4, king:false},
+
+		h1:{color:"B", row:8, index:1, king:false},
+		h3:{color:"B", row:8, index:2, king:false},
+		h5:{color:"B", row:8, index:3, king:false},
+		h7:{color:"B", row:8, index:4, king:false},
 	},
-	// rows: {
-	// 	1:["a2","a4","a6","a8"],
-	// 	2:["b1","b3","b5","b7"],
-	// 	3:["c2","c4","c6","c8"],
-	// 	4:["d1","d3","d5","d7"],
-	// 	5:["e2","e4","e6","e8"],
-	// 	6:["f1","f3","f5","f7"],
-	// 	7:["g2","g4","g6","g8"],
-	// 	8:["h1","h3","h5","h7"],
-	// },
+
+	selected: {
+		king: false,
+		position: "",
+		color: "",
+		row: "",
+		index: "",
+	},
+
+	rows: {
+		1:["a2","a4","a6","a8"],
+		2:["b1","b3","b5","b7"],
+		3:["c2","c4","c6","c8"],
+		4:["d1","d3","d5","d7"],
+		5:["e2","e4","e6","e8"],
+		6:["f1","f3","f5","f7"],
+		7:["g2","g4","g6","g8"],
+		8:["h1","h3","h5","h7"],
+	},
 
 	setup: {
 		row: ['a','b','c','d','e','f','g','h'],
@@ -42,15 +82,20 @@ var board = {
 	
 	legalSpaces: ["a2", "a4", "a6", "a8", "b1", "b3", "b5", "b7", "c2", "c4", "c6", "c8", "d1", "d3", "d5", "d7", "e2", "e4", "e6", "e8", "f1", "f3", "f5", "f7", "g2", "g4", "g6", "g8", "h1", "h3", "h5", "h7"],
 	reverse: '',
-	selected: false,
 	turn: true,
-	red:"<div data-color='red' class='red'></div>",
-	black:"<div data-color='black' class='black'></div>",
-	selectedPosition: "",
-	selectedColor: "",
+	red: {
+		pieces:12,
+		display:"<div data-color='red' class='red'></div>",
+		king:"&#9733;",
+	},
+	black: {
+		pieces:12,
+		display:"<div data-color='black' class='black'></div>",
+		king:"&#9734;",
+	},
 
 	isOpen: function(pos) {
-		if( this.state[pos][0] != undefined && !(this.state[pos][0].length) ){
+		if( this.state[pos].color != undefined && !(this.state[pos].color.length) ){
 			return true;
 		}
 		return false;
@@ -73,23 +118,25 @@ var board = {
 	},
 
 	getColor: function (pos){
-		if(this.state[pos][0] != undefined && this.state[pos][0].length){
-			return this.state[pos][0] === "R" ? "red" : "black";
+		if(this.state[pos].color != undefined && this.state[pos].color.length){
+			return this.state[pos].color === "R" ? "red" : "black";
 		}
 	},
 
 	toggleTurn: function(){
-		this.selectedPosition = "";
+		this.selected.position = "";
 		return this.turn === true ? this.turn = false : this.turn = true;
 	},
 
 	storeClick: function(pos,color) {
-		this.selectedPosition = pos;
-		this.selectedColor = color;
+		this.selected.position = pos;
+		this.selected.color = color;
+		this.selected.row = this.state[pos].row;
+		this.selected.index = this.state[pos].index;
 	},
 
 	clearClick: function() {
-		this.selectedPosition = "";
+		this.selected.position = "";
 	},
 
 
@@ -102,16 +149,28 @@ var board = {
 		$("[data-position=" + pos + "]").children().toggleClass("selected");
 	},
 
-	removePiece: function(selectedPosition) {
-		$("[data-position=" + selectedPosition + "]").children().remove();
-		this.state[selectedPosition][0] = "";
+	removePiece: function(pos) {
+		$("[data-position=" + pos + "]").children().remove();
+		this.state[pos].color = "";
 	},
 
-	setPiece: function(click) {
-		$("[data-position=" + click + "]").append(this[this.selectedColor]);
+	setPiece: function(pos) {
+		$("[data-position=" + pos + "]").append(this[this.selected.color].display);
 		var color;
-		this.selectedColor == "red" ? color = "R" : color = "B";
-		this.state[click][0] = color;
+		this.selected.color == "red" ? color = "R" : color = "B";
+		this.state[pos].color = color;
+	},
+
+	canMove: function(pos) {
+		console.log(this.state[pos].row);
+	},
+
+	jump: function() {
+
+	},
+
+	captured: function(color) {
+		this[color].pieces -= 1;
 	},
 }
 
@@ -180,7 +239,7 @@ $('.square').on('click', function(){
 	*	If player hasn't selected a piece yet.
 	*	If valid position && Piece not yet selected.
 	*/
-	if (board.legalMove(pos) && !board.selectedPosition ){
+	if (board.legalMove(pos) && !board.selected.position ){
 
 		//Return click color.
 		var color = board.getColor(pos);
@@ -202,25 +261,27 @@ $('.square').on('click', function(){
 	*	If piece selected and click on piece of same color.
 	*	Allow player to switch piece if already selected.
 	*/
-	if( board.selectedColor === board.getColor(pos) ){
+	if( board.selected.color === board.getColor(pos) ){
 		//Turn off selected state of previous piece
-		board.toggleSelected(board.selectedPosition);
+		board.toggleSelected(board.selected.position);
 		//Store new piece position
-		board.storeClick(pos,board.selectedColor);
+		board.storeClick(pos,board.selected.color);
 		//Toggle selected state for new piece.
 		board.toggleSelected(pos);
 		return;
 	}
 
 	//If piece already selected and the click is open space, and its a legal move. The intention is to move the piece.
-	if( board.selectedPosition && board.isOpen(pos) && board.legalMove(pos) ) {
+	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) ) {
 
 		//Clear previous position
-		board.removePiece(board.selectedPosition);
+		board.removePiece(board.selected.position);
 		//Set piece in new position.
 		board.setPiece(pos);
 		//Switch turn to next player.
 		board.toggleTurn();
+
+		board.canMove(pos);//Testing
 	}
 
 });
