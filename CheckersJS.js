@@ -62,16 +62,16 @@ var board = {
 		index: "",
 	},
 
-	rows: {
-		1:["a2","a4","a6","a8"],
-		2:["b1","b3","b5","b7"],
-		3:["c2","c4","c6","c8"],
-		4:["d1","d3","d5","d7"],
-		5:["e2","e4","e6","e8"],
-		6:["f1","f3","f5","f7"],
-		7:["g2","g4","g6","g8"],
-		8:["h1","h3","h5","h7"],
-	},
+	// rows: {
+	// 	1:["a2","a4","a6","a8"],
+	// 	2:["b1","b3","b5","b7"],
+	// 	3:["c2","c4","c6","c8"],
+	// 	4:["d1","d3","d5","d7"],
+	// 	5:["e2","e4","e6","e8"],
+	// 	6:["f1","f3","f5","f7"],
+	// 	7:["g2","g4","g6","g8"],
+	// 	8:["h1","h3","h5","h7"],
+	// },
 
 	setup: {
 		row: ['a','b','c','d','e','f','g','h'],
@@ -95,7 +95,7 @@ var board = {
 	},
 
 	isOpen: function(pos) {
-		if( this.state[pos].color != undefined && !(this.state[pos].color.length) ){
+		if( this.state[pos] != undefined && !(this.state[pos].color.length) ){
 			return true;
 		}
 		return false;
@@ -118,13 +118,12 @@ var board = {
 	},
 
 	getColor: function (pos){
-		if(this.state[pos].color != undefined && this.state[pos].color.length){
+		if( this.state[pos] != undefined && this.state[pos].color.length){
 			return this.state[pos].color === "R" ? "red" : "black";
 		}
 	},
 
 	toggleTurn: function(){
-		this.selected.position = "";
 		return this.turn === true ? this.turn = false : this.turn = true;
 	},
 
@@ -137,6 +136,9 @@ var board = {
 
 	clearClick: function() {
 		this.selected.position = "";
+		this.selected.color = "";
+		this.selected.row = "";
+		this.selected.index = "";
 	},
 
 
@@ -162,7 +164,13 @@ var board = {
 	},
 
 	canMove: function(pos) {
-		console.log(this.state[pos].row);
+		if ( this.selected.color === "black" && this.selected.row == (this.state[pos].row + 1) && (this.selected.index == this.state[pos].index  || this.selected.index == (this.state[pos].index + 1) ) ) {
+			return true;
+		}else if ( this.selected.color === "red" && this.selected.row == (this.state[pos].row - 1) && (this.selected.index == this.state[pos].index  || this.selected.index == (this.state[pos].index - 1) ) ) {
+			return true;
+		}else {
+			return false;
+		}
 	},
 
 	jump: function() {
@@ -272,16 +280,17 @@ $('.square').on('click', function(){
 	}
 
 	//If piece already selected and the click is open space, and its a legal move. The intention is to move the piece.
-	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) ) {
+	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.canMove(pos) ) {
 
 		//Clear previous position
 		board.removePiece(board.selected.position);
 		//Set piece in new position.
 		board.setPiece(pos);
+		//Clear Selected Object.
+		board.clearClick();
 		//Switch turn to next player.
 		board.toggleTurn();
 
-		board.canMove(pos);//Testing
 	}
 
 });
