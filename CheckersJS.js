@@ -172,6 +172,7 @@ var board = {
 			return false;
 		}
 	},
+	
 
 	jump: function() {
 
