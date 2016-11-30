@@ -62,16 +62,16 @@ var board = {
 		index: "",
 	},
 
-	// rows: {
-	// 	1:["a2","a4","a6","a8"],
-	// 	2:["b1","b3","b5","b7"],
-	// 	3:["c2","c4","c6","c8"],
-	// 	4:["d1","d3","d5","d7"],
-	// 	5:["e2","e4","e6","e8"],
-	// 	6:["f1","f3","f5","f7"],
-	// 	7:["g2","g4","g6","g8"],
-	// 	8:["h1","h3","h5","h7"],
-	// },
+	rows: {
+		1:["a2","a4","a6","a8"],
+		2:["b1","b3","b5","b7"],
+		3:["c2","c4","c6","c8"],
+		4:["d1","d3","d5","d7"],
+		5:["e2","e4","e6","e8"],
+		6:["f1","f3","f5","f7"],
+		7:["g2","g4","g6","g8"],
+		8:["h1","h3","h5","h7"],
+	},
 
 	setup: {
 		row: ['a','b','c','d','e','f','g','h'],
@@ -162,20 +162,86 @@ var board = {
 		this.selected.color == "red" ? color = "R" : color = "B";
 		this.state[pos].color = color;
 	},
-
-	canMove: function(pos) {
-		if ( this.selected.color === "black" && this.selected.row == (this.state[pos].row + 1) && (this.selected.index == this.state[pos].index  || this.selected.index == (this.state[pos].index + 1) ) ) {
+	selectedIsBlack: function() {
+		return this.selected.color === "black" ? true : false;
+	},
+	selectedIsRed: function() {
+		return this.selected.color === "red" ? true : false;
+	},
+	clickIsNextRow: function(pos,selectedColor) {
+		if(selectedColor === "black") {
+			return this.selected.row == (this.state[pos].row + 1) ? true : false;
+		}else if (selectedColor === "red"){
+			return this.selected.row == (this.state[pos].row - 1) ? true : false;
+		}else {
+			return false;
+		}
+	},
+	clickIsJump: function(pos,selectedColor) {
+		if(selectedColor === "black") {
+			return this.selected.row == (this.state[pos].row + 2) ? true : false;
+		}else if (selectedColor === "red"){
+			return this.selected.row == (this.state[pos].row - 2) ? true : false;
+		}else {
+			return false;
+		}
+	},
+	singleMove: function(pos,selectedColor) {
+		if(selectedColor === "black") {
+			return this.selected.index == this.state[pos].index  || this.selected.index == (this.state[pos].index + 1) ? true : false;
+		}else if (selectedColor === "red"){
+			return this.selected.index == this.state[pos].index  || this.selected.index == (this.state[pos].index - 1) ? true : false;
+		}else {
+			return false;
+		}
+	},
+	moveToNextRow: function(pos) {
+		if ( this.selectedIsBlack() && this.clickIsNextRow(pos,this.selected.color) &&  this.singleMove(pos,this.selected.color) )  {
 			return true;
-		}else if ( this.selected.color === "red" && this.selected.row == (this.state[pos].row - 1) && (this.selected.index == this.state[pos].index  || this.selected.index == (this.state[pos].index - 1) ) ) {
+		}else if ( this.selectedIsRed() && this.clickIsNextRow(pos,this.selected.color) &&  this.singleMove(pos,this.selected.color) )  {
 			return true;
 		}else {
 			return false;
 		}
 	},
-	
 
-	jump: function() {
+	//Check two diaganol spaces to see if opponent is there
+	opponentAhead: function() {
+		/*
+		if (black){
+			row = row - 1
+			index = index
+			index2 = (index - 1)
 
+			pos1 = this.rows[row][index]
+			pos2 = this.rows[row][index2]
+
+			if (this.state[index] === "red" || index2 ===red ){
+			
+			}
+		}
+		if (red){
+			row = row + 1
+			index = index
+			index2 = (index + 1)
+
+			pos1 = this.rows[row][index]
+			pos2 = this.rows[row][index2]
+
+			if (this.state[index] === "black" || index2 ===black ){
+			
+			}
+		}
+		 */
+		}
+	},
+
+	//Todo
+	//Checks to see if jump is legal
+	jump: function(pos) {
+		if ( this.clickIsJump(pos,this.selected.color) ) {
+			return true;
+		}
 	},
 
 	captured: function(color) {
@@ -281,7 +347,9 @@ $('.square').on('click', function(){
 	}
 
 	//If piece already selected and the click is open space, and its a legal move. The intention is to move the piece.
-	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.canMove(pos) ) {
+	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.moveToNextRow(pos) ) {
+
+	 	console.log("Move 1 space Diagnoal, Next row.")
 
 		//Clear previous position
 		board.removePiece(board.selected.position);
@@ -293,5 +361,22 @@ $('.square').on('click', function(){
 		board.toggleTurn();
 
 	}
+
+		//If piece already selected and the click is open space, and its a legal move. The intention is to move the piece.
+	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.jump(pos) ) {
+
+		console.log('JUMP')
+
+		//Clear previous position
+		board.removePiece(board.selected.position);
+		//Set piece in new position.
+		board.setPiece(pos);
+		//Clear Selected Object.
+		board.clearClick();
+		//Switch turn to next player.
+		board.toggleTurn();
+
+	}
+
 
 });
