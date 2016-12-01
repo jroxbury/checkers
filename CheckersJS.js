@@ -13,45 +13,45 @@ var dom = $("#checkerBoard");
 var board = {
 
 	state: {
-		a2:{color:"R", row:1, index:1, king:false},
-		a4:{color:"R", row:1, index:2, king:false},
-		a6:{color:"R", row:1, index:3, king:false},
-		a8:{color:"R", row:1, index:4, king:false},
+		a2:{color:"R", row:1, index:0, king:false},
+		a4:{color:"R", row:1, index:1, king:false},
+		a6:{color:"R", row:1, index:2, king:false},
+		a8:{color:"R", row:1, index:3, king:false},
 
-		b1:{color:"R", row:2, index:1, king:false},
-		b3:{color:"R", row:2, index:2, king:false},
-		b5:{color:"R", row:2, index:3, king:false},
-		b7:{color:"R", row:2, index:4, king:false},
+		b1:{color:"R", row:2, index:0, king:false},
+		b3:{color:"R", row:2, index:1, king:false},
+		b5:{color:"R", row:2, index:2, king:false},
+		b7:{color:"R", row:2, index:3, king:false},
 
-		c2:{color:"R", row:3, index:1, king:false},
-		c4:{color:"R", row:3, index:2, king:false},
-		c6:{color:"R", row:3, index:3, king:false},
-		c8:{color:"R", row:3, index:4, king:false},
+		c2:{color:"R", row:3, index:0, king:false},
+		c4:{color:"R", row:3, index:1, king:false},
+		c6:{color:"R", row:3, index:2, king:false},
+		c8:{color:"R", row:3, index:3, king:false},
 
-		d1:{color:"" , row:4, index:1, king:false},
-		d3:{color:"" , row:4, index:2, king:false},
-		d5:{color:"" , row:4, index:3, king:false},
-		d7:{color:"" , row:4, index:4, king:false},
+		d1:{color:"" , row:4, index:0, king:false},
+		d3:{color:"" , row:4, index:1, king:false},
+		d5:{color:"" , row:4, index:2, king:false},
+		d7:{color:"" , row:4, index:3, king:false},
 
-		e2:{color:"" , row:5, index:1, king:false},
-		e4:{color:"" , row:5, index:2, king:false},
-		e6:{color:"" , row:5, index:3, king:false},
-		e8:{color:"" , row:5, index:4, king:false},
+		e2:{color:"" , row:5, index:0, king:false},
+		e4:{color:"" , row:5, index:1, king:false},
+		e6:{color:"" , row:5, index:2, king:false},
+		e8:{color:"" , row:5, index:3, king:false},
 
-		f1:{color:"B", row:6, index:1, king:false},
-		f3:{color:"B", row:6, index:2, king:false},
-		f5:{color:"B", row:6, index:3, king:false},
-		f7:{color:"B", row:6, index:4, king:false},
+		f1:{color:"B", row:6, index:0, king:false},
+		f3:{color:"B", row:6, index:1, king:false},
+		f5:{color:"B", row:6, index:2, king:false},
+		f7:{color:"B", row:6, index:3, king:false},
 
-		g2:{color:"B", row:7, index:1, king:false},
-		g4:{color:"B", row:7, index:2, king:false},
-		g6:{color:"B", row:7, index:3, king:false},
-		g8:{color:"B", row:7, index:4, king:false},
+		g2:{color:"B", row:7, index:0, king:false},
+		g4:{color:"B", row:7, index:1, king:false},
+		g6:{color:"B", row:7, index:2, king:false},
+		g8:{color:"B", row:7, index:3, king:false},
 
-		h1:{color:"B", row:8, index:1, king:false},
-		h3:{color:"B", row:8, index:2, king:false},
-		h5:{color:"B", row:8, index:3, king:false},
-		h7:{color:"B", row:8, index:4, king:false},
+		h1:{color:"B", row:8, index:0, king:false},
+		h3:{color:"B", row:8, index:1, king:false},
+		h5:{color:"B", row:8, index:2, king:false},
+		h7:{color:"B", row:8, index:3, king:false},
 	},
 
 	selected: {
@@ -198,6 +198,8 @@ var board = {
 	moveToNextRow: function(pos) {
 		if ( this.selectedIsBlack() && this.clickIsNextRow(pos,this.selected.color) &&  this.singleMove(pos,this.selected.color) )  {
 			return true;
+
+			//Need to check this. Can't move.
 		}else if ( this.selectedIsRed() && this.clickIsNextRow(pos,this.selected.color) &&  this.singleMove(pos,this.selected.color) )  {
 			return true;
 		}else {
@@ -207,32 +209,37 @@ var board = {
 
 	//Check two diaganol spaces to see if opponent is there
 	opponentAhead: function() {
-		/*
-		if (black){
-			row = row - 1
-			index = index
-			index2 = (index - 1)
+		var row;
+		var index1;
+		var index2;
+		var pos1;
+		var pos2;
+		if ( this.selectedIsBlack() ){
+			row = this.selected.row - 1;
+			index1 = this.selected.index;
+			index2 = this.selected.index + 1;
+			pos1 = this.rows[row][index1];
+			pos2 = this.rows[row][index2];
 
-			pos1 = this.rows[row][index]
-			pos2 = this.rows[row][index2]
-
-			if (this.state[index] === "red" || index2 ===red ){
-			
+			if ( this.state[pos1].color === "R" || this.state[pos2].color === "R" ){
+				console.log("Red opponent ahead");
+				console.log(this.state[pos1]);
+				console.log(this.state[pos2]);
 			}
 		}
-		if (red){
-			row = row + 1
-			index = index
-			index2 = (index + 1)
+		if ( this.selectedIsRed() ){
+			row = this.selected.row + 1;
+			index1 = this.selected.index;
+			index2 = this.selected.index - 1;
+			pos1 = this.rows[row][index1];
+			pos2 = this.rows[row][index2];
 
-			pos1 = this.rows[row][index]
-			pos2 = this.rows[row][index2]
-
-			if (this.state[index] === "black" || index2 ===black ){
-			
+			if (this.state[pos1].color === "B" || this.state[pos2].color === "B" ){
+				console.log("Black opponent ahead");
+				console.log(this.state[pos1]);
+				console.log(this.state[pos2]);
 			}
 		}
-		 */
 	},
 
 	//Todo
@@ -241,6 +248,10 @@ var board = {
 		if ( this.clickIsJump(pos,this.selected.color) ) {
 			return true;
 		}
+	},
+	canJumpAgain: function() {
+		//After jump, Check to see if can jump again.
+		//All Jumps must been taken.
 	},
 
 	captured: function(color) {
