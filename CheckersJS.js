@@ -62,6 +62,9 @@ var board = {
 		index: "",
 	},
 
+	redEnemyNear: [],
+	blackEnemyNear: [],
+
 	rows: {
 		1:["a2","a4","a6","a8"],
 		2:["b1","b3","b5","b7"],
