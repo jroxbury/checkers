@@ -94,6 +94,30 @@ var board = {
 		king:"&#9734;",
 	},
 
+	/*=-=-=-=-=-=-=-=-=-=-=-=-=-= Dom Functions =-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+	
+	getPosition: function(click){
+		return $(click).data("position");
+	},
+
+	toggleSelected: function(pos) {
+		$("[data-position=" + pos + "]").children().toggleClass("selected");
+	},
+
+	removePiece: function(pos) {
+		$("[data-position=" + pos + "]").children().remove();
+		this.state[pos].color = "";
+	},
+
+	setPiece: function(pos) {
+		$("[data-position=" + pos + "]").append(this[this.selected.color].display);
+		var color;
+		this.selected.color == "red" ? color = "R" : color = "B";
+		this.state[pos].color = color;
+	},
+
+	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Checks =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 	isOpen: function(pos) {
 		if( this.state[pos] != undefined && !(this.state[pos].color.length) ){
 			return true;
@@ -122,11 +146,27 @@ var board = {
 			return this.state[pos].color === "R" ? "red" : "black";
 		}
 	},
-
 	toggleTurn: function(){
 		return this.turn === true ? this.turn = false : this.turn = true;
 	},
+	isCaptured: function(color) {
+		this[color].pieces -= 1;
+	},
+	isGameOver: function() {
+		if ( !(this.red.pieces) ){
+			alert('Black won!')
+			return true;
+		}
+		if ( !(this.black.pieces) ){
+			alert('Red won!')
+			return true;
+		}
+		return false;
+	},
 
+
+	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Selected State =-=-=-=-=-=-=-=-=-=-=-=-=-*/
+	
 	storeClick: function(pos,color) {
 		this.selected.position = pos;
 		this.selected.color = color;
@@ -141,33 +181,17 @@ var board = {
 		this.selected.index = "";
 	},
 
-
-	// Dom functions
-	getPosition: function(click){
-		return $(click).data("position");
-	},
-
-	toggleSelected: function(pos) {
-		$("[data-position=" + pos + "]").children().toggleClass("selected");
-	},
-
-	removePiece: function(pos) {
-		$("[data-position=" + pos + "]").children().remove();
-		this.state[pos].color = "";
-	},
-
-	setPiece: function(pos) {
-		$("[data-position=" + pos + "]").append(this[this.selected.color].display);
-		var color;
-		this.selected.color == "red" ? color = "R" : color = "B";
-		this.state[pos].color = color;
-	},
 	selectedIsBlack: function() {
 		return this.selected.color === "black" ? true : false;
 	},
 	selectedIsRed: function() {
 		return this.selected.color === "red" ? true : false;
 	},
+
+
+	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=- Single Move -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+
 	clickIsNextRow: function(pos,selectedColor) {
 		if(selectedColor === "black") {
 			return this.selected.row == (this.state[pos].row + 1) ? true : false;
@@ -177,6 +201,32 @@ var board = {
 			return false;
 		}
 	},
+
+	singleMove: function(pos,selected) {
+		//Black piece and Index 0 on Edge.
+		if( selected.color === "black" && !(selected.row % 2) || selected.color === "red" && !(selected.row % 2) ) {
+			return this.selected.index == this.state[pos].index  || this.selected.index == (this.state[pos].index + 1) ? true : false;
+		}
+		if( selected.color === "black" && (selected.row % 2) || selected.color === "red" && (selected.row % 2) ) {
+			return this.selected.index == this.state[pos].index  || this.selected.index == (this.state[pos].index - 1) ? true : false;
+		}		
+		return false;
+	},
+	moveToNextRow: function(pos) {
+		if ( this.selectedIsBlack() && this.clickIsNextRow(pos,this.selected.color) &&  this.singleMove(pos,this.selected) )  {
+			return true;
+
+			//Need to check this. Can't move.
+		}else if ( this.selectedIsRed() && this.clickIsNextRow(pos,this.selected.color) &&  this.singleMove(pos,this.selected) )  {
+			return true;
+		}else {
+			return false;
+		}
+	},
+
+
+	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- Jump Logic -=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 	clickIsJump: function(pos,selectedColor) {
 		if(selectedColor === "black") {
 			return this.selected.row == (this.state[pos].row + 2) ? true : false;
@@ -186,27 +236,6 @@ var board = {
 			return false;
 		}
 	},
-	singleMove: function(pos,selectedColor) {
-		if(selectedColor === "black") {
-			return this.selected.index == this.state[pos].index  || this.selected.index == (this.state[pos].index + 1) ? true : false;
-		}else if (selectedColor === "red"){
-			return this.selected.index == this.state[pos].index  || this.selected.index == (this.state[pos].index - 1) ? true : false;
-		}else {
-			return false;
-		}
-	},
-	moveToNextRow: function(pos) {
-		if ( this.selectedIsBlack() && this.clickIsNextRow(pos,this.selected.color) &&  this.singleMove(pos,this.selected.color) )  {
-			return true;
-
-			//Need to check this. Can't move.
-		}else if ( this.selectedIsRed() && this.clickIsNextRow(pos,this.selected.color) &&  this.singleMove(pos,this.selected.color) )  {
-			return true;
-		}else {
-			return false;
-		}
-	},
-
 	//Check two diaganol spaces to see if opponent is there
 	opponentAhead: function() {
 		var row;
@@ -225,7 +254,9 @@ var board = {
 				console.log("Red opponent ahead");
 				console.log(this.state[pos1]);
 				console.log(this.state[pos2]);
+				return true;
 			}
+			return false;
 		}
 		if ( this.selectedIsRed() ){
 			row = this.selected.row + 1;
@@ -238,14 +269,16 @@ var board = {
 				console.log("Black opponent ahead");
 				console.log(this.state[pos1]);
 				console.log(this.state[pos2]);
+				return true;
 			}
+			return false;
 		}
 	},
 
 	//Todo
 	//Checks to see if jump is legal
 	jump: function(pos) {
-		if ( this.clickIsJump(pos,this.selected.color) ) {
+		if ( this.clickIsJump(pos,this.selected.color) && this.opponentAhead() ) {
 			return true;
 		}
 	},
@@ -254,9 +287,11 @@ var board = {
 		//All Jumps must been taken.
 	},
 
-	captured: function(color) {
-		this[color].pieces -= 1;
+	makeKing: function() {
+		// If black or red reaches other side.
+		// Toggle board.state.king
 	},
+
 }
 
 
@@ -369,6 +404,8 @@ $('.square').on('click', function(){
 		board.clearClick();
 		//Switch turn to next player.
 		board.toggleTurn();
+		//Check if game is over.
+		board.isGameOver();
 
 	}
 
@@ -385,6 +422,8 @@ $('.square').on('click', function(){
 		board.clearClick();
 		//Switch turn to next player.
 		board.toggleTurn();
+		//Check if game is over.
+		board.isGameOver();
 
 	}
 
