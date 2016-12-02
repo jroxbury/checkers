@@ -171,17 +171,22 @@ var board = {
 	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Selected State =-=-=-=-=-=-=-=-=-=-=-=-=-*/
 	
 	storeClick: function(pos,color) {
-		this.selected.position = pos;
-		this.selected.color = color;
-		this.selected.row = this.state[pos].row;
-		this.selected.index = this.state[pos].index;
+		var selected = this.selected;
+		var state = this.state;
+		selected.position = pos;
+		selected.color = color;
+		selected.row = state[pos].row;
+		selected.index = state[pos].index;
+		selected.king = state[pos].king;
 	},
 
 	clearClick: function() {
-		this.selected.position = "";
-		this.selected.color = "";
-		this.selected.row = "";
-		this.selected.index = "";
+		var selected = this.selected;
+		selected.position = "";
+		selected.color = "";
+		selected.row = "";
+		selected.index = "";
+		selected.king = false;
 	},
 
 	selectedIsBlack: function() {
@@ -195,32 +200,36 @@ var board = {
 	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=- Single Move -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 
-	clickIsNextRow: function(pos,selectedColor) {
-		if(selectedColor === "black") {
-			return this.selected.row == (this.state[pos].row + 1) ? true : false;
-		}else if (selectedColor === "red"){
-			return this.selected.row == (this.state[pos].row - 1) ? true : false;
+	clickIsNextRow: function(pos) {
+		var selected = this.selected;
+		var state = this.state;
+		if(selected.color === "black") {
+			return selected.row == (state[pos].row + 1) ? true : false;
+		}else if (selected.color === "red"){
+			return selected.row == (state[pos].row - 1) ? true : false;
 		}else {
 			return false;
 		}
 	},
 
-	singleMove: function(pos,selected) {
+	singleMove: function(pos) {
+		var selected = this.selected;
+		var state = this.state;
 		//Black piece and Index 0 on Edge.
 		if( selected.color === "black" && !(selected.row % 2) || selected.color === "red" && !(selected.row % 2) ) {
-			return this.selected.index == this.state[pos].index  || this.selected.index == (this.state[pos].index + 1) ? true : false;
+			return selected.index == state[pos].index  || selected.index == (state[pos].index + 1) ? true : false;
 		}
 		if( selected.color === "black" && (selected.row % 2) || selected.color === "red" && (selected.row % 2) ) {
-			return this.selected.index == this.state[pos].index  || this.selected.index == (this.state[pos].index - 1) ? true : false;
+			return selected.index == state[pos].index  || selected.index == (state[pos].index - 1) ? true : false;
 		}		
 		return false;
 	},
 	moveToNextRow: function(pos) {
-		if ( this.selectedIsBlack() && this.clickIsNextRow(pos,this.selected.color) &&  this.singleMove(pos,this.selected) )  {
+		if ( this.selectedIsBlack() && this.clickIsNextRow(pos) &&  this.singleMove(pos) )  {
 			return true;
 
 			//Need to check this. Can't move.
-		}else if ( this.selectedIsRed() && this.clickIsNextRow(pos,this.selected.color) &&  this.singleMove(pos,this.selected) )  {
+		}else if ( this.selectedIsRed() && this.clickIsNextRow(pos) &&  this.singleMove(pos) )  {
 			return true;
 		}else {
 			return false;
@@ -230,48 +239,59 @@ var board = {
 
 	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- Jump Logic -=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-	clickIsJump: function(pos,selectedColor) {
-		if(selectedColor === "black") {
-			return this.selected.row == (this.state[pos].row + 2) ? true : false;
-		}else if (selectedColor === "red"){
-			return this.selected.row == (this.state[pos].row - 2) ? true : false;
+	clickIsJump: function(pos) {
+		var selected = this.selected;
+		var state = this.state;
+		if(selected.color === "black") {
+			return selected.row == (state[pos].row + 2) ? true : false;
+		}else if (selected.color === "red"){
+			return selected.row == (state[pos].row - 2) ? true : false;
 		}else {
 			return false;
 		}
 	},
+	validJump: function(pos) {
+		return this.selected.index != this.state[pos].index ? true : false;
+	},
 	//Check two diaganol spaces to see if opponent is there
 	opponentAhead: function() {
+		this.blackEnemyNear = [];
+		this.redEnemyNear = [];
 		var row;
 		var index1;
 		var index2;
 		var pos1;
 		var pos2;
+		var selected = this.selected;
+		var state = this.state;
 		if ( this.selectedIsBlack() ){
-			row = this.selected.row - 1;
-			index1 = this.selected.index;
-			index2 = this.selected.index + 1;
+			row = selected.row - 1;
+			index1 = selected.index;
+			index2 = selected.index + 1;
 			pos1 = this.rows[row][index1];
 			pos2 = this.rows[row][index2];
 
-			if ( this.state[pos1].color === "R" || this.state[pos2].color === "R" ){
+			if ( state[pos1].color === "R" || state[pos2].color === "R" ){
+				this.redEnemyNear.push(state[pos1], state[pos2]);
 				console.log("Red opponent ahead");
-				console.log(this.state[pos1]);
-				console.log(this.state[pos2]);
+				console.log(state[pos1]);
+				console.log(state[pos2]);
 				return true;
 			}
 			return false;
 		}
 		if ( this.selectedIsRed() ){
-			row = this.selected.row + 1;
-			index1 = this.selected.index;
-			index2 = this.selected.index - 1;
+			row = selected.row + 1;
+			index1 = selected.index;
+			index2 = selected.index - 1;
 			pos1 = this.rows[row][index1];
 			pos2 = this.rows[row][index2];
 
-			if (this.state[pos1].color === "B" || this.state[pos2].color === "B" ){
+			if (state[pos1].color === "B" || state[pos2].color === "B" ){
+				this.blackEnemyNear.push(state[pos1], state[pos2]);
 				console.log("Black opponent ahead");
-				console.log(this.state[pos1]);
-				console.log(this.state[pos2]);
+				console.log(state[pos1]);
+				console.log(state[pos2]);
 				return true;
 			}
 			return false;
@@ -281,7 +301,7 @@ var board = {
 	//Todo
 	//Checks to see if jump is legal
 	jump: function(pos) {
-		if ( this.clickIsJump(pos,this.selected.color) && this.opponentAhead() ) {
+		if ( this.clickIsJump(pos,this.selected.color) && this.opponentAhead() && this.validJump(pos) ) {
 			return true;
 		}
 	},
@@ -407,6 +427,16 @@ $('.square').on('click', function(){
 		board.clearClick();
 		//Switch turn to next player.
 		board.toggleTurn();
+
+
+
+
+
+
+
+
+
+
 		//Check if game is over.
 		board.isGameOver();
 
@@ -425,6 +455,12 @@ $('.square').on('click', function(){
 		board.clearClick();
 		//Switch turn to next player.
 		board.toggleTurn();
+
+
+
+
+
+
 		//Check if game is over.
 		board.isGameOver();
 
