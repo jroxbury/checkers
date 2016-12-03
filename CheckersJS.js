@@ -105,13 +105,17 @@ var board = {
 	removePiece: function(pos) {
 		$("[data-position=" + pos + "]").children().remove();
 		this.state[pos].color = "";
+		this.state[pos].king = false;
 	},
 
 	setPiece: function(pos) {
 		$("[data-position=" + pos + "]").append(this[this.selected.color].display);
 		var color;
-		this.selected.color == "red" ? color = "R" : color = "B";
+		var king;
+		this.selected.color === "red" ? color = "R" : color = "B";
+		this.selected.king === true ? king = true : king = false;
 		this.state[pos].color = color;
+		this.state[pos].king = king;
 	},
 
 	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Checks =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -226,6 +230,7 @@ var board = {
 	clickIsJumpDown: function(pos) {
 		return this.selected.row == (this.state[pos].row - 2) ? true : false;
 	},
+
 	//Todo
 	//Checks to see if jump is legal
 	jump: function(pos) {
@@ -238,15 +243,7 @@ var board = {
 			}
 		}
 	},
-	// clickIsJump: function(pos) {
-	// 	if(selected.color === "black") {
-	// 		return selected.row == (state[pos].row + 2) ? true : false;
-	// 	}else if (selected.color === "red"){
-	// 		return selected.row == (state[pos].row - 2) ? true : false;
-	// 	}else {
-	// 		return false;
-	// 	}
-	// },
+
 	validJump: function(pos) {
 		return this.selected.index != this.state[pos].index ? true : false;
 	},
@@ -299,9 +296,13 @@ var board = {
 		//All Jumps must been taken.
 	},
 
-	makeKing: function() {
-		// If black or red reaches other side.
-		// Toggle board.state.king
+	makeKing: function(pos) {
+		if( this.selected.color === "red" && this.rows[8].includes(pos) ){
+			this.state[pos].king = true;
+		}
+		if( this.selected.color === "black" && this.rows[1].includes(pos) ) {
+			this.state[pos].king = true;
+		}
 	},
 
 }
@@ -412,6 +413,9 @@ $('.square').on('click', function(){
 		board.removePiece(board.selected.position);
 		//Set piece in new position.
 		board.setPiece(pos);
+
+		board.makeKing(pos);
+
 		//Clear Selected Object.
 		board.clearClick();
 		//Switch turn to next player.
@@ -440,6 +444,9 @@ $('.square').on('click', function(){
 		board.removePiece(board.selected.position);
 		//Set piece in new position.
 		board.setPiece(pos);
+
+		board.makeKing(pos);
+
 		//Clear Selected Object.
 		board.clearClick();
 		//Switch turn to next player.
