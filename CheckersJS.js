@@ -54,15 +54,10 @@ var board = {
 		h7:{color:"B", row:8, index:3, king:false},
 	},
 
-	selected: {
-		king: false,
-		position: "",
-		color: "",
-		row: "",
-		index: "",
-	},
+	selected: {},
 
 	redEnemyNear: [],
+
 	blackEnemyNear: [],
 
 	rows: {
@@ -122,17 +117,11 @@ var board = {
 	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Checks =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 	isOpen: function(pos) {
-		if( this.state[pos] != undefined && !(this.state[pos].color.length) ){
-			return true;
-		}
-		return false;
+		return this.state[pos] != undefined && !(this.state[pos].color.length) ? true : false;
 	},
 
 	legalMove: function(position) {
-		if ( this.legalSpaces.includes(position) ) {
-			return true;
-		}
-		return false;
+		return this.legalSpaces.includes(position) ? true : false;
 	},
 
 	checkTurn: function(color) {
@@ -171,22 +160,17 @@ var board = {
 	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Selected State =-=-=-=-=-=-=-=-=-=-=-=-=-*/
 	
 	storeClick: function(pos,color) {
-		var selected = this.selected;
-		var state = this.state;
-		selected.position = pos;
-		selected.color = color;
-		selected.row = state[pos].row;
-		selected.index = state[pos].index;
-		selected.king = state[pos].king;
+		this.selected.position = pos;
+		this.selected.color = color;
+		this.selected.row = this.state[pos].row;
+		this.selected.index = this.state[pos].index;
+		this.selected.king = this.state[pos].king;
 	},
 
 	clearClick: function() {
-		var selected = this.selected;
-		selected.position = "";
-		selected.color = "";
-		selected.row = "";
-		selected.index = "";
-		selected.king = false;
+		this.selected = {
+			color:"",
+		};
 	},
 
 	selectedIsBlack: function() {
@@ -199,57 +183,70 @@ var board = {
 
 	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=- Single Move -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-
-	clickIsNextRow: function(pos) {
-		var selected = this.selected;
-		var state = this.state;
-		if(selected.color === "black") {
-			return selected.row == (state[pos].row + 1) ? true : false;
-		}else if (selected.color === "red"){
-			return selected.row == (state[pos].row - 1) ? true : false;
-		}else {
-			return false;
-		}
+	rowAbove: function(pos) {
+		return this.selected.row == (this.state[pos].row + 1) ? true : false;
+	},
+	rowBelow: function(pos) {
+		return this.selected.row == (this.state[pos].row - 1) ? true : false;
 	},
 
 	singleMove: function(pos) {
-		var selected = this.selected;
-		var state = this.state;
-		//Black piece and Index 0 on Edge.
-		if( selected.color === "black" && !(selected.row % 2) || selected.color === "red" && !(selected.row % 2) ) {
-			return selected.index == state[pos].index  || selected.index == (state[pos].index + 1) ? true : false;
+		if( !(this.selected.row % 2) ) {
+			return this.selected.index == this.state[pos].index  || this.selected.index == (this.state[pos].index + 1) ? true : false;
 		}
-		if( selected.color === "black" && (selected.row % 2) || selected.color === "red" && (selected.row % 2) ) {
-			return selected.index == state[pos].index  || selected.index == (state[pos].index - 1) ? true : false;
+		if( this.selected.row % 2 ) {
+			return this.selected.index == this.state[pos].index  || this.selected.index == (this.state[pos].index - 1) ? true : false;
 		}		
 		return false;
 	},
-	moveToNextRow: function(pos) {
-		if ( this.selectedIsBlack() && this.clickIsNextRow(pos) &&  this.singleMove(pos) )  {
-			return true;
+	moveOneRow: function(pos) {
+		if ( this.singleMove(pos) ){
 
-			//Need to check this. Can't move.
-		}else if ( this.selectedIsRed() && this.clickIsNextRow(pos) &&  this.singleMove(pos) )  {
-			return true;
-		}else {
-			return false;
+			if ( !(this.selected.king) ) {
+
+				if ( this.selectedIsBlack() && this.rowAbove(pos) )  {
+					return true;
+				}
+				if ( this.selectedIsRed() && this.rowBelow(pos) )  {
+					return true;
+				}
+			}
+			if (this.selected.king && this.rowAbove(pos) || this.rowBelow(pos) ){
+				return true;
+			}
 		}
+		return false;
 	},
 
 
 	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- Jump Logic -=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-	clickIsJump: function(pos) {
-		var selected = this.selected;
-		var state = this.state;
-		if(selected.color === "black") {
-			return selected.row == (state[pos].row + 2) ? true : false;
-		}else if (selected.color === "red"){
-			return selected.row == (state[pos].row - 2) ? true : false;
-		}else {
-			return false;
+	clickIsJumpUp: function(pos) {
+		return this.selected.row == (this.state[pos].row + 2) ? true : false;
+	},
+	clickIsJumpDown: function(pos) {
+		return this.selected.row == (this.state[pos].row - 2) ? true : false;
+	},
+	//Todo
+	//Checks to see if jump is legal
+	jump: function(pos) {
+		if ( this.opponentAhead() && this.validJump(pos) ) {
+			if ( this.clickIsJumpUp(pos) && this.selected.color === "black" ) {
+				return true;
+			}
+			if ( this.clickIsJumpUp(pos) && this.selected.color === "red" ) {
+				return true;
+			}
 		}
 	},
+	// clickIsJump: function(pos) {
+	// 	if(selected.color === "black") {
+	// 		return selected.row == (state[pos].row + 2) ? true : false;
+	// 	}else if (selected.color === "red"){
+	// 		return selected.row == (state[pos].row - 2) ? true : false;
+	// 	}else {
+	// 		return false;
+	// 	}
+	// },
 	validJump: function(pos) {
 		return this.selected.index != this.state[pos].index ? true : false;
 	},
@@ -295,14 +292,6 @@ var board = {
 				return true;
 			}
 			return false;
-		}
-	},
-
-	//Todo
-	//Checks to see if jump is legal
-	jump: function(pos) {
-		if ( this.clickIsJump(pos,this.selected.color) && this.opponentAhead() && this.validJump(pos) ) {
-			return true;
 		}
 	},
 	canJumpAgain: function() {
@@ -415,7 +404,7 @@ $('.square').on('click', function(){
 	}
 
 	//If piece already selected and the click is open space, and its a legal move. The intention is to move the piece.
-	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.moveToNextRow(pos) ) {
+	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.moveOneRow(pos) ) {
 
 	 	console.log("Move 1 space Diagnoal, Next row.")
 
