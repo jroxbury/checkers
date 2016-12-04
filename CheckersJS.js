@@ -198,12 +198,20 @@ var board = {
 	rowBelow: function(pos) {
 		return this.selected.row == (this.state[pos].row - 1) ? true : false;
 	},
-
+	lastRowTop:function(pos) {
+		return this.state[pos].row === 1 ? true : false;
+	},
+	lastRowBottom:function(pos) {
+		return this.state[pos].row === 8 ? true : false;
+	},
+	evenRow: function() {
+		return !(this.selected.row % 2) ? true : false;
+	},
 	singleMove: function(pos) {
-		if( !(this.selected.row % 2) ) {
+		if( this.evenRow() ) {
 			return this.selected.index == this.state[pos].index  || this.selected.index == (this.state[pos].index + 1) ? true : false;
 		}
-		if( this.selected.row % 2 ) {
+		if( !(this.evenRow()) ) {
 			return this.selected.index == this.state[pos].index  || this.selected.index == (this.state[pos].index - 1) ? true : false;
 		}		
 		return false;
@@ -309,9 +317,10 @@ var board = {
 	},
 
 	makeKing: function(pos) {
-		if( this.selected.color === "red" && this.rows[8].includes(pos) || this.selected.color === "black" && this.rows[1].includes(pos) ){
+		if( (this.selectedIsRed() && this.lastRowBottom(pos)) || (this.selectedIsBlack() && this.lastRowTop(pos)) ){
 			this.selected.king = true;
 		}
+		return false;
 	},
 	move: function(pos) {
 		return this.moveOneRow(pos) || this.jump(pos) ? true : false;
