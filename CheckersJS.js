@@ -84,12 +84,12 @@ var board = {
 	red: {
 		pieces:12,
 		display:"<div data-color='red' class='red'></div>",
-		king:"&#9733;",
+		kingDisplay:"<div data-color='red' class='red'>&#9733;</div>",
 	},
 	black: {
 		pieces:12,
 		display:"<div data-color='black' class='black'></div>",
-		king:"&#9734;",
+		kingDisplay:"<div data-color='black' class='black'>&#9734;</div>",
 	},
 
 	/*=-=-=-=-=-=-=-=-=-=-=-=-=-= Dom Functions =-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -109,13 +109,18 @@ var board = {
 	},
 
 	setPiece: function(pos) {
-		$("[data-position=" + pos + "]").append(this[this.selected.color].display);
 		var color;
 		var king;
 		this.selected.color === "red" ? color = "R" : color = "B";
 		this.selected.king === true ? king = true : king = false;
 		this.state[pos].color = color;
 		this.state[pos].king = king;
+
+		if(!this.state[pos].king){
+			$("[data-position=" + pos + "]").append(this[this.selected.color].display);
+		}else {
+			$("[data-position=" + pos + "]").append(this[this.selected.color].kingDisplay);
+		}
 	},
 
 	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Checks =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -203,19 +208,23 @@ var board = {
 		}		
 		return false;
 	},
+
 	moveOneRow: function(pos) {
 		if ( this.singleMove(pos) ){
 
 			if ( !(this.selected.king) ) {
 
 				if ( this.selectedIsBlack() && this.rowAbove(pos) )  {
+					console.log('Black and row above.');
 					return true;
 				}
 				if ( this.selectedIsRed() && this.rowBelow(pos) )  {
+					console.log("red and row below");
 					return true;
 				}
 			}
-			if (this.selected.king && this.rowAbove(pos) || this.rowBelow(pos) ){
+			if (this.selected.king && ( this.rowAbove(pos) || this.rowBelow(pos) ) ){
+				console.log("king Move");
 				return true;
 			}
 		}
@@ -238,7 +247,10 @@ var board = {
 			if ( this.clickIsJumpUp(pos) && this.selected.color === "black" ) {
 				return true;
 			}
-			if ( this.clickIsJumpUp(pos) && this.selected.color === "red" ) {
+			if ( this.clickIsJumpDown(pos) && this.selected.color === "red" ) {
+				return true;
+			}
+			if (this.selected.king && ( this.clickIsJumpUp(pos) || this.clickIsJumpDown(pos) ) ) {
 				return true;
 			}
 		}
@@ -297,12 +309,12 @@ var board = {
 	},
 
 	makeKing: function(pos) {
-		if( this.selected.color === "red" && this.rows[8].includes(pos) ){
-			this.state[pos].king = true;
+		if( this.selected.color === "red" && this.rows[8].includes(pos) || this.selected.color === "black" && this.rows[1].includes(pos) ){
+			this.selected.king = true;
 		}
-		if( this.selected.color === "black" && this.rows[1].includes(pos) ) {
-			this.state[pos].king = true;
-		}
+	},
+	move: function(pos) {
+		return this.moveOneRow(pos) || this.jump(pos) ? true : false;
 	},
 
 }
@@ -346,13 +358,13 @@ for(x = 0; x < board.setup.row.length; x++){
 //Putting the Red pieces on the board.
 $.each(board.setup.redStart, function(key,val) {
 	var redPiece = $("div").find("[data-position='" + val + "']");
-	redPiece.append('<div data-color="red" class="red"></div>');
+	redPiece.append(board.red.display);
 });
 
 //Putting the Black pieces on the board.
 $.each(board.setup.blackStart, function(key,val) {
 	var blackPiece = $("div").find("[data-position='" + val + "']");
-	blackPiece.append('<div data-color="black" class="black"></div>');
+	blackPiece.append(board.black.display);
 });
 
 
@@ -392,7 +404,7 @@ $('.square').on('click', function(){
 
 	/*
 	*	If piece selected and click on piece of same color.
-	*	Allow player to switch piece if already selected.
+	*	Allow player to switch piece.
 	*/
 	if( board.selected.color === board.getColor(pos) ){
 		//Turn off selected state of previous piece
@@ -404,17 +416,16 @@ $('.square').on('click', function(){
 		return;
 	}
 
-	//If piece already selected and the click is open space, and its a legal move. The intention is to move the piece.
-	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.moveOneRow(pos) ) {
+	//Piece selected && click on open spac && Legal position && Valid Move.
+	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.move(pos) ) {
 
-	 	console.log("Move 1 space Diagnoal, Next row.")
+		board.makeKing(pos);
 
 		//Clear previous position
 		board.removePiece(board.selected.position);
+
 		//Set piece in new position.
 		board.setPiece(pos);
-
-		board.makeKing(pos);
 
 		//Clear Selected Object.
 		board.clearClick();
@@ -422,45 +433,9 @@ $('.square').on('click', function(){
 		board.toggleTurn();
 
 
-
-
-
-
-
-
-
-
 		//Check if game is over.
 		board.isGameOver();
 
 	}
-
-		//If piece already selected and the click is open space, and its a legal move. The intention is to move the piece.
-	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.jump(pos) ) {
-
-		console.log('JUMP')
-
-		//Clear previous position
-		board.removePiece(board.selected.position);
-		//Set piece in new position.
-		board.setPiece(pos);
-
-		board.makeKing(pos);
-
-		//Clear Selected Object.
-		board.clearClick();
-		//Switch turn to next player.
-		board.toggleTurn();
-
-
-
-
-
-
-		//Check if game is over.
-		board.isGameOver();
-
-	}
-
 
 });
