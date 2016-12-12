@@ -264,6 +264,15 @@ var board = {
 		}
 	},
 
+	capturedPosition: function(pos) {
+		if ( this.selectedIsBlack() ) {
+			return this.state[pos].index >= this.selected.index ? this.redEnemyNear[1].pos : this.redEnemyNear[0].pos;
+		}
+		if ( this.selectedIsRed() ) {
+			return this.state[pos].index <= this.selected.index ? this.blackEnemyNear[1].pos : this.blackEnemyNear[0].pos;
+		}
+	},
+
 	validJump: function(pos) {
 		return this.selected.index != this.state[pos].index ? true : false;
 	},
@@ -286,10 +295,17 @@ var board = {
 			pos2 = this.rows[row][index2];
 
 			if ( state[pos1].color === "R" || state[pos2].color === "R" ){
-				this.redEnemyNear.push(state[pos1], state[pos2]);
-				console.log("Red opponent ahead");
-				console.log(state[pos1]);
-				console.log(state[pos2]);
+				this.redEnemyNear.push(
+					{
+						pos:pos1,
+						index:state[pos1].index,
+					},
+					{
+						pos:pos2,
+						index:state[pos2].index,
+					}
+
+				);
 				return true;
 			}
 			return false;
@@ -302,10 +318,16 @@ var board = {
 			pos2 = this.rows[row][index2];
 
 			if (state[pos1].color === "B" || state[pos2].color === "B" ){
-				this.blackEnemyNear.push(state[pos1], state[pos2]);
-				console.log("Black opponent ahead");
-				console.log(state[pos1]);
-				console.log(state[pos2]);
+				this.blackEnemyNear.push(
+					{
+						pos:pos1,
+						index:state[pos1].index,
+					},
+					{
+						pos:pos2,
+						index:state[pos2].index,
+					}
+				);
 				return true;
 			}
 			return false;
@@ -321,9 +343,6 @@ var board = {
 			this.selected.king = true;
 		}
 		return false;
-	},
-	move: function(pos) {
-		return this.moveOneRow(pos) || this.jump(pos) ? true : false;
 	},
 
 }
@@ -425,8 +444,8 @@ $('.square').on('click', function(){
 		return;
 	}
 
-	//Piece selected && click on open spac && Legal position && Valid Move.
-	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.move(pos) ) {
+	//Piece selected && click on open space && Legal position && Valid Move.
+	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.moveOneRow(pos) ) {
 
 		board.makeKing(pos);
 
@@ -441,6 +460,31 @@ $('.square').on('click', function(){
 		//Switch turn to next player.
 		board.toggleTurn();
 
+		//Check if game is over.
+		board.isGameOver();
+
+	}
+
+	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.jump(pos) ) {
+
+		board.makeKing(pos);
+
+		//Clear previous position
+		board.removePiece(board.selected.position);
+
+		//Remove Captured piece from piece count.
+		board.isCaptured( board.getColor( board.capturedPosition(pos) ) );
+
+		//Remove jumped piece.
+		board.removePiece(board.capturedPosition(pos));
+
+		//Set piece in new position.
+		board.setPiece(pos);
+
+		//Clear Selected Object.
+		board.clearClick();
+		//Switch turn to next player.
+		board.toggleTurn();
 
 		//Check if game is over.
 		board.isGameOver();
