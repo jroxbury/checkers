@@ -269,7 +269,7 @@ var board = {
 			return this.state[pos].index >= this.selected.index ? this.redEnemyNear[1].pos : this.redEnemyNear[0].pos;
 		}
 		if ( this.selectedIsRed() ) {
-			return this.state[pos].index <= this.selected.index ? this.blackEnemyNear[1].pos : this.blackEnemyNear[0].pos;
+			return this.state[pos].index >= this.selected.index ? this.blackEnemyNear[1].pos : this.blackEnemyNear[0].pos;
 		}
 	},
 	canJump:function (pos) {
@@ -338,31 +338,81 @@ var board = {
 			return check ? true : false;
 
 		}
-		
 
-		
 		if ( this.selectedIsRed() ){
 			row = selected.row + 1;
-			index1 = selected.index;
-			index2 = selected.index - 1;
-			pos1 = this.rows[row][index1];
-			pos2 = this.rows[row][index2];
+			
+			if( this.evenRow(this.selected) && !(this.selected.index === 0) ){
+				index1 = selected.index - 1;
+				pos1 = this.rows[row][index1];
 
-			if (state[pos1].color === "B" || state[pos2].color === "B" ){
-				this.blackEnemyNear.push(
-					{
+				index2 = selected.index;
+				pos2 = this.rows[row][index2];
+
+				console.log(pos1,pos2)
+
+			}else if ( this.evenRow(this.selected) && (this.selected.index === 0) ) {
+				index2 = selected.index;
+				pos2 = this.rows[row][index2];
+				console.log(pos2)
+			}
+
+			if( !this.evenRow(this.selected) && !(this.selected.index === 3) ){
+				index1 = selected.index;
+				pos1 = this.rows[row][index1];
+				index2 = selected.index + 1;
+				pos2 = this.rows[row][index2];
+			}else if( !this.evenRow(this.selected) && (this.selected.index === 3) ) {
+				index1 = selected.index;
+				pos1 = this.rows[row][index1];
+			}
+			
+			if( pos1 && state[pos1].color === "B" ) {
+				this.blackEnemyNear.push({
 						pos:pos1,
 						index:state[pos1].index,
-					},
+				})
+				check = true;
+			}else {
+				this.blackEnemyNear.push({});
+			}
+			if ( pos2 && state[pos2].color === "B" ){
+				this.blackEnemyNear.push(
 					{
 						pos:pos2,
 						index:state[pos2].index,
-					}
-				);
-				return true;
+				})
+				check = true;
+			}else {
+				this.blackEnemyNear.push({});
 			}
-			return false;
+
+			return check ? true : false;
+
 		}
+		
+		// if ( this.selectedIsRed() ){
+		// 	row = selected.row + 1;
+		// 	index1 = selected.index;
+		// 	index2 = selected.index - 1;
+		// 	pos1 = this.rows[row][index1];
+		// 	pos2 = this.rows[row][index2];
+
+		// 	if (state[pos1].color === "B" || state[pos2].color === "B" ){
+		// 		this.blackEnemyNear.push(
+		// 			{
+		// 				pos:pos1,
+		// 				index:state[pos1].index,
+		// 			},
+		// 			{
+		// 				pos:pos2,
+		// 				index:state[pos2].index,
+		// 			}
+		// 		);
+		// 		return true;
+		// 	}
+		// 	return false;
+		// }
 	},
 	canJumpAgain: function() {
 		//After jump, Check to see if can jump again.
