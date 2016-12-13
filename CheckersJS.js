@@ -251,7 +251,7 @@ var board = {
 	//Todo
 	//Checks to see if jump is legal
 	jump: function(pos) {
-		if ( this.opponentAhead() && this.validJump(pos) ) {
+		if ( this.opponentAhead() && this.validJump(pos) && this.canJump(pos) ) {
 			if ( this.clickIsJumpUp(pos) && this.selected.color === "black" ) {
 				return true;
 			}
@@ -272,7 +272,9 @@ var board = {
 			return this.state[pos].index <= this.selected.index ? this.blackEnemyNear[1].pos : this.blackEnemyNear[0].pos;
 		}
 	},
-
+	canJump:function (pos) {
+		return this.capturedPosition(pos) != undefined ? true : false;
+	},
 	validJump: function(pos) {
 		return this.selected.index != this.state[pos].index ? true : false;
 	},
@@ -287,29 +289,58 @@ var board = {
 		var pos2;
 		var selected = this.selected;
 		var state = this.state;
+		var check = false;
 		if ( this.selectedIsBlack() ){
 			row = selected.row - 1;
-			index1 = selected.index;
-			index2 = selected.index + 1;
-			pos1 = this.rows[row][index1];
-			pos2 = this.rows[row][index2];
+			
+			if( this.evenRow(this.selected) && !(this.selected.index === 0) ){
+				index1 = selected.index - 1;
+				pos1 = this.rows[row][index1];
 
-			if ( state[pos1].color === "R" || state[pos2].color === "R" ){
-				this.redEnemyNear.push(
-					{
+				index2 = selected.index;
+				pos2 = this.rows[row][index2];
+
+			}else if ( this.evenRow(this.selected) && (this.selected.index === 0) ) {
+				index2 = selected.index;
+				pos2 = this.rows[row][index2];
+			}
+
+			if( !this.evenRow(this.selected) && !(this.selected.index === 3) ){
+				index1 = selected.index;
+				pos1 = this.rows[row][index1];
+				index2 = selected.index + 1;
+				pos2 = this.rows[row][index2];
+			}else if( !this.evenRow(this.selected) && (this.selected.index === 3) ) {
+				index1 = selected.index;
+				pos1 = this.rows[row][index1];
+			}
+			
+			if( pos1 && state[pos1].color === "R" ) {
+				this.redEnemyNear.push({
 						pos:pos1,
 						index:state[pos1].index,
-					},
+				})
+				check = true;
+			}else {
+				this.redEnemyNear.push({});
+			}
+			if ( pos2 && state[pos2].color === "R" ){
+				this.redEnemyNear.push(
 					{
 						pos:pos2,
 						index:state[pos2].index,
-					}
-
-				);
-				return true;
+				})
+				check = true;
+			}else {
+				this.redEnemyNear.push({});
 			}
-			return false;
+
+			return check ? true : false;
+
 		}
+		
+
+		
 		if ( this.selectedIsRed() ){
 			row = selected.row + 1;
 			index1 = selected.index;
@@ -412,7 +443,7 @@ $('.square').on('click', function(){
 	*	If player hasn't selected a piece yet.
 	*	If valid position && Piece not yet selected.
 	*/
-	if (board.legalMove(pos) && !board.selected.position ){
+	if ( board.legalMove(pos) && !(board.selected.position) && !(board.isOpen(pos)) ){
 
 		//Return click color.
 		var color = board.getColor(pos);
@@ -434,7 +465,7 @@ $('.square').on('click', function(){
 	*	If piece selected and click on piece of same color.
 	*	Allow player to switch piece.
 	*/
-	if( board.selected.color === board.getColor(pos) ){
+	if( !(board.isOpen(pos)) && board.legalMove(pos) && board.selected.color === board.getColor(pos) ){
 		//Turn off selected state of previous piece
 		board.toggleSelected(board.selected.position);
 		//Store new piece position
