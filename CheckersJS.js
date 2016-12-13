@@ -188,6 +188,9 @@ var board = {
 	selectedIsRed: function() {
 		return this.selected.color === "red" ? true : false;
 	},
+	selectedIsKing: function() {
+		return this.selected.king === true ? true : false;
+	},
 
 
 	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=- Single Move -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -277,6 +280,16 @@ var board = {
 	},
 	validJump: function(pos) {
 		return this.selected.index != this.state[pos].index ? true : false;
+	},
+
+	possibleJumps: function(){
+		if(selectedIsRed){}
+		if(selectedIsBlack){}
+		if(selectedIsKing){}
+		if (this.evenRow && this.selected.index === 0){}
+		if (!this.evenRow && this.selected.index === 0){}
+		if (this.evenRow && this.selected.index === 3){}
+		if (!this.evenRow && this.selected.index === 3){}
 	},
 	//Check two diaganol spaces to see if opponent is there
 	opponentAhead: function() {
@@ -391,7 +404,7 @@ var board = {
 
 		}
 	},
-	
+
 	canJumpAgain: function() {
 		//After jump, Check to see if can jump again.
 		//All Jumps must been taken.
