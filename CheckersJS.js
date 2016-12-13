@@ -390,30 +390,8 @@ var board = {
 			return check ? true : false;
 
 		}
-		
-		// if ( this.selectedIsRed() ){
-		// 	row = selected.row + 1;
-		// 	index1 = selected.index;
-		// 	index2 = selected.index - 1;
-		// 	pos1 = this.rows[row][index1];
-		// 	pos2 = this.rows[row][index2];
-
-		// 	if (state[pos1].color === "B" || state[pos2].color === "B" ){
-		// 		this.blackEnemyNear.push(
-		// 			{
-		// 				pos:pos1,
-		// 				index:state[pos1].index,
-		// 			},
-		// 			{
-		// 				pos:pos2,
-		// 				index:state[pos2].index,
-		// 			}
-		// 		);
-		// 		return true;
-		// 	}
-		// 	return false;
-		// }
 	},
+	
 	canJumpAgain: function() {
 		//After jump, Check to see if can jump again.
 		//All Jumps must been taken.
