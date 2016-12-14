@@ -254,7 +254,7 @@ var board = {
 	//Todo
 	//Checks to see if jump is legal
 	jump: function(pos) {
-		if ( this.opponentAhead() && this.validJump(pos) && this.canJump(pos) ) {
+		if ( this.opponentAhead() && this.jumpCheck(pos) && this.canJump(pos) ) {
 			if ( this.clickIsJumpUp(pos) && this.selected.color === "black" ) {
 				return true;
 			}
@@ -278,19 +278,28 @@ var board = {
 	canJump:function (pos) {
 		return this.capturedPosition(pos) != undefined ? true : false;
 	},
-	validJump: function(pos) {
-		return this.selected.index != this.state[pos].index ? true : false;
+	
+	jumps: function(){
+		switch(this.selected.index) {
+		    case 0:
+		        return [1];
+		        break;
+		    case 1:
+		        return [0,2];
+		        break;
+		    case 2:
+		        return [1,3];
+		        break;
+		    case 3:
+		        return [2];
+		        break;
+		}
 	},
 
-	possibleJumps: function(){
-		if(selectedIsRed){}
-		if(selectedIsBlack){}
-		if(selectedIsKing){}
-		if (this.evenRow && this.selected.index === 0){}
-		if (!this.evenRow && this.selected.index === 0){}
-		if (this.evenRow && this.selected.index === 3){}
-		if (!this.evenRow && this.selected.index === 3){}
+	jumpCheck: function(pos){
+		return this.jumps().indexOf(this.state[pos].index) > -1 ? true : false;
 	},
+	
 	//Check two diaganol spaces to see if opponent is there
 	opponentAhead: function() {
 		this.blackEnemyNear = [];
