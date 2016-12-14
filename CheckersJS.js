@@ -130,7 +130,7 @@ var board = {
 	},
 
 	legalMove: function(position) {
-		return this.legalSpaces.includes(position) ? true : false;
+		return this.legalSpaces.indexOf(position) > -1 ? true : false;
 	},
 
 	checkTurn: function(color) {
@@ -226,16 +226,13 @@ var board = {
 			if ( !(this.selected.king) ) {
 
 				if ( this.selectedIsBlack() && this.rowAbove(pos) )  {
-					console.log('Black and row above.');
 					return true;
 				}
 				if ( this.selectedIsRed() && this.rowBelow(pos) )  {
-					console.log("red and row below");
 					return true;
 				}
 			}
 			if (this.selected.king && ( this.rowAbove(pos) || this.rowBelow(pos) ) ){
-				console.log("king Move");
 				return true;
 			}
 		}
@@ -278,7 +275,7 @@ var board = {
 	canJump:function (pos) {
 		return this.capturedPosition(pos) != undefined ? true : false;
 	},
-	
+
 	jumps: function(){
 		switch(this.selected.index) {
 		    case 0:
