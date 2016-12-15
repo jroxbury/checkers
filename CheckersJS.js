@@ -248,8 +248,6 @@ var board = {
 		return this.selected.row == (this.state[pos].row - 2) ? true : false;
 	},
 
-	//Todo
-	//Checks to see if jump is legal
 	jump: function(pos) {
 		if ( this.opponentAhead() && this.jumpCheck(pos) && this.canJump(pos) ) {
 			if ( this.clickIsJumpUp(pos) && this.selected.color === "black" ) {
@@ -290,6 +288,44 @@ var board = {
 		    case 3:
 		        return [2];
 		        break;
+		}
+	},
+
+	//Not used yet.
+	checkNextRow: function(pos) {
+		if ( this.evenRow() ){
+
+			switch(pos) {
+			    case 0:
+			        return [0];
+			        break;
+			    case 1:
+			        return [0,1];
+			        break;
+			    case 2:
+			        return [1,2];
+			        break;
+			    case 3:
+			        return [2,3];
+			        break;
+			}
+
+		}else if( !this.evenRow() ){
+
+			switch(pos) {
+			    case 0:
+			        return [0,1];
+			        break;
+			    case 1:
+			        return [1,2];
+			        break;
+			    case 2:
+			        return [2,3];
+			        break;
+			    case 3:
+			        return [3];
+			        break;
+			}
 		}
 	},
 
