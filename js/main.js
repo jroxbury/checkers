@@ -356,6 +356,8 @@ var board = {
 		this.kingEnemyNear = [];
 		var pos1 = '';
 		var pos2 = '';
+		var pos3 = '';
+		var pos4 = '';
 		var index1 = '';
 		var index2 = '';
 		var index3 = '';
@@ -373,9 +375,16 @@ var board = {
 			index2 = moves[1] ? moves[1] : false;
 
 			if( this.selected.row != 1 ) {
+				
 				topRow = this.selected.row - 1;
-				pos1 = this.rows[topRow][index1];				
-				pos2 = index2 ? this.rows[topRow][index2] : false;
+
+				if (moves.length != 2 && this.selected.index == 0){
+					index2 = moves[0];
+					pos2 = this.rows[topRow][index2];
+				}else {
+					pos1 = this.rows[topRow][index1];				
+					pos2 = index2 ? this.rows[topRow][index2] : false;
+				}
 			}
 
 			if ( this.selected.row != 8 ) {
@@ -482,7 +491,7 @@ var board = {
 				index2 = moves[1] ? moves[1] : false;
 				pos2 = index2 ? this.rows[bottomRow][index2] : false;
 			}
-			
+
 			if( pos1 && this.state[pos1].color === "B" ) {
 				this.blackEnemyNear.push({
 						pos:pos1,
