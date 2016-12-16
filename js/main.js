@@ -56,9 +56,13 @@ var board = {
 
 	selected: {},
 
+	enemyAhead: false,
+
 	redEnemyNear: [],
 
 	blackEnemyNear: [],
+
+	kingEnemyNear: [],
 
 	rows: {
 		1:["a2","a4","a6","a8"],
@@ -263,6 +267,15 @@ var board = {
 	},
 
 	capturedPosition: function(pos) {
+
+		if ( this.selectedIsKing() ){
+
+			if (this.state[pos].row > this.selected.row) {
+				return this.state[pos].index >= this.selected.index ? this.kingEnemyNear[3].pos : this.kingEnemyNear[2].pos;
+			}else {
+				return this.state[pos].index >= this.selected.index ? this.kingEnemyNear[1].pos : this.kingEnemyNear[0].pos;
+			}
+		}
 		if ( this.selectedIsBlack() ) {
 			return this.state[pos].index >= this.selected.index ? this.redEnemyNear[1].pos : this.redEnemyNear[0].pos;
 		}
@@ -291,7 +304,10 @@ var board = {
 		}
 	},
 
-	//Not used yet.
+	jumpCheck: function(pos){
+		return this.jumps().indexOf(this.state[pos].index) > -1 ? true : false;
+	},
+
 	checkNextRow: function(pos) {
 		if ( this.evenRow() ){
 
@@ -329,61 +345,112 @@ var board = {
 		}
 	},
 
-	jumpCheck: function(pos){
-		return this.jumps().indexOf(this.state[pos].index) > -1 ? true : false;
+	isNum:function(num){
+		!isNaN(num) && num !== undefined ? true : false;
 	},
 	
 	//Check two diaganol spaces to see if opponent is there
 	opponentAhead: function() {
 		this.blackEnemyNear = [];
 		this.redEnemyNear = [];
-		var row;
-		var index1;
-		var index2;
-		var pos1;
-		var pos2;
-		var selected = this.selected;
-		var state = this.state;
-		var check = false;
+		this.kingEnemyNear = [];
+		var pos1 = '';
+		var pos2 = '';
+		var index1 = '';
+		var index2 = '';
+		var index3 = '';
+		var index4 = '';
+		var moves = [];
+		var topRow = '';
+		var bottomRow = '';
+		var color = '';
+		if ( this.selectedIsKing() ){
+
+			this.selected.color === "red" ? color = "B" : color = "R";
+
+			moves = this.checkNextRow(this.selected.index);
+			index1 = moves[0];
+			index2 = moves[1] ? moves[1] : false;
+
+			if( this.selected.row != 1 ) {
+				topRow = this.selected.row - 1;
+				pos1 = this.rows[topRow][index1];				
+				pos2 = index2 ? this.rows[topRow][index2] : false;
+			}
+
+			if ( this.selected.row != 8 ) {
+				bottomRow = this.selected.row + 1;
+				pos3 = this.rows[bottomRow][index1];
+				pos4 = index2 ? this.rows[bottomRow][index2] : false;
+			}
+
+			if( pos1  && this.state[pos1].color === color ) {
+				this.kingEnemyNear.push({
+						pos:pos1,
+						index:this.state[pos1].index,
+				})
+				check = true;
+			}else {
+				this.kingEnemyNear.push({});
+			}
+
+			if( pos2 && this.state[pos2].color === color ) {
+				this.kingEnemyNear.push({
+						pos:pos2,
+						index:this.state[pos2].index,
+				})
+				check = true;
+			}else {
+				this.kingEnemyNear.push({});
+			}
+
+			if( pos3 && this.state[pos3].color === color ) {
+				this.kingEnemyNear.push({
+						pos:pos3,
+						index:this.state[pos3].index,
+				})
+				check = true;
+			}else {
+				this.kingEnemyNear.push({});
+			}
+			
+			if( pos4 && this.state[pos4].color === color ) {
+				this.kingEnemyNear.push({
+						pos:pos4,
+						index:this.state[pos4].index,
+				})
+				check = true;
+			}else {
+				this.kingEnemyNear.push({});
+			}
+
+			return check ? true : false;
+			
+		}
+
 		if ( this.selectedIsBlack() ){
-			row = selected.row - 1;
+			topRow = this.selected.row - 1;
 			
-			if( this.evenRow(this.selected) && !(this.selected.index === 0) ){
-				index1 = selected.index - 1;
-				pos1 = this.rows[row][index1];
+			moves = this.checkNextRow(this.selected.index);
+			index1 = moves[0];
+			pos1 = this.rows[topRow][index1];
+			index2 = moves[1] ? moves[1] : false;
+			pos2 = index2 ? this.rows[topRow][index2] : false;
 
-				index2 = selected.index;
-				pos2 = this.rows[row][index2];
-
-			}else if ( this.evenRow(this.selected) && (this.selected.index === 0) ) {
-				index2 = selected.index;
-				pos2 = this.rows[row][index2];
-			}
-
-			if( !this.evenRow(this.selected) && !(this.selected.index === 3) ){
-				index1 = selected.index;
-				pos1 = this.rows[row][index1];
-				index2 = selected.index + 1;
-				pos2 = this.rows[row][index2];
-			}else if( !this.evenRow(this.selected) && (this.selected.index === 3) ) {
-				index1 = selected.index;
-				pos1 = this.rows[row][index1];
-			}
-			
-			if( pos1 && state[pos1].color === "R" ) {
+			if( this.state[pos1].color === "R" ) {
 				this.redEnemyNear.push({
 						pos:pos1,
-						index:state[pos1].index,
+						index:this.state[pos1].index,
 				})
 				check = true;
 			}else {
 				this.redEnemyNear.push({});
 			}
-			if ( pos2 && state[pos2].color === "R" ){
+			if ( pos2 && this.state[pos2].color === "R" ){
 				this.redEnemyNear.push(
 					{
 						pos:pos2,
-						index:state[pos2].index,
+						index:this.state[pos2].index,
 				})
 				check = true;
 			}else {
@@ -395,47 +462,28 @@ var board = {
 		}
 
 		if ( this.selectedIsRed() ){
-			row = selected.row + 1;
+			bottomRow = this.selected.row + 1;
 			
-			if( this.evenRow(this.selected) && !(this.selected.index === 0) ){
-				index1 = selected.index - 1;
-				pos1 = this.rows[row][index1];
+			moves = this.checkNextRow(this.selected.index);
+			index1 = moves[0];
+			pos1 = this.rows[bottomRow][index1];
+			index2 = moves[1] ? moves[1] : false;
+			pos2 = index2 ? this.rows[bottomRow][index2] : false;
 
-				index2 = selected.index;
-				pos2 = this.rows[row][index2];
-
-				console.log(pos1,pos2)
-
-			}else if ( this.evenRow(this.selected) && (this.selected.index === 0) ) {
-				index2 = selected.index;
-				pos2 = this.rows[row][index2];
-				console.log(pos2)
-			}
-
-			if( !this.evenRow(this.selected) && !(this.selected.index === 3) ){
-				index1 = selected.index;
-				pos1 = this.rows[row][index1];
-				index2 = selected.index + 1;
-				pos2 = this.rows[row][index2];
-			}else if( !this.evenRow(this.selected) && (this.selected.index === 3) ) {
-				index1 = selected.index;
-				pos1 = this.rows[row][index1];
-			}
-			
-			if( pos1 && state[pos1].color === "B" ) {
+			if( pos1 && this.state[pos1].color === "B" ) {
 				this.blackEnemyNear.push({
 						pos:pos1,
-						index:state[pos1].index,
+						index:this.state[pos1].index,
 				})
 				check = true;
 			}else {
 				this.blackEnemyNear.push({});
 			}
-			if ( pos2 && state[pos2].color === "B" ){
+			if ( pos2 && this.state[pos2].color === "B" ){
 				this.blackEnemyNear.push(
 					{
 						pos:pos2,
-						index:state[pos2].index,
+						index:this.state[pos2].index,
 				})
 				check = true;
 			}else {
@@ -445,6 +493,7 @@ var board = {
 			return check ? true : false;
 
 		}
+
 	},
 
 	canJumpAgain: function() {
@@ -581,8 +630,6 @@ $('.square').on('click', function(){
 
 	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.jump(pos) ) {
 
-		board.makeKing(pos);
-
 		//Clear previous position
 		board.removePiece(board.selected.position);
 
@@ -591,6 +638,9 @@ $('.square').on('click', function(){
 
 		//Remove jumped piece.
 		board.removePiece(board.capturedPosition(pos));
+
+		//Reached other side ? Make king : No.
+		board.makeKing(pos);
 
 		//Set piece in new position.
 		board.setPiece(pos);
