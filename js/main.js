@@ -389,11 +389,20 @@ var board = {
 
 			if ( this.selected.row != 8 ) {
 				bottomRow = this.selected.row + 1;
-				pos3 = this.rows[bottomRow][index1];
-				pos4 = index2 ? this.rows[bottomRow][index2] : false;
+
+				if (moves.length != 2 && this.selected.index == 0){
+					
+					index2 = moves[0];
+					pos4 = this.rows[bottomRow][index2];
+
+				}else {
+
+					pos3 = this.rows[bottomRow][index1];
+					pos4 = index2 ? this.rows[bottomRow][index2] : false;
+				}
 			}
 
-			if( pos1  && this.state[pos1].color === color ) {
+			if( pos1 && this.state[pos1].color === color ) {
 				this.kingEnemyNear.push({
 						pos:pos1,
 						index:this.state[pos1].index,
