@@ -85,6 +85,7 @@ var board = {
 	legalSpaces: ["a2", "a4", "a6", "a8", "b1", "b3", "b5", "b7", "c2", "c4", "c6", "c8", "d1", "d3", "d5", "d7", "e2", "e4", "e6", "e8", "f1", "f3", "f5", "f7", "g2", "g4", "g6", "g8", "h1", "h3", "h5", "h7"],
 	reverse: '',
 	turn: true,
+	jumping: false,
 	red: {
 		pieces:12,
 		display:"<div data-color='red' class='red'></div>",
@@ -107,15 +108,26 @@ var board = {
 	},
 
 	removePiece: function(pos) {
-		$("[data-position=" + pos + "]").children().remove();
+		$("[data-position=" + pos + "]").children().fadeOut();
 		this.state[pos].color = "";
 		this.state[pos].king = false;
 	},
 
+
+	addMsg: function(selector,msg){
+		$(selector).append(msg);
+	},
+	removeMsg: function(selector) {
+		setTimeout(function(){
+		    $(selector).children().fadeOut();
+		},2000)
+	},
+	
+
 	setPiece: function(pos) {
 		var color;
 		var king;
-		this.selected.color === "red" ? color = "R" : color = "B";
+		this.selectedIsRed() ? color = "R" : color = "B";
 		this.selected.king === true ? king = true : king = false;
 		this.state[pos].color = color;
 		this.state[pos].king = king;
@@ -196,6 +208,13 @@ var board = {
 		return this.selected.king === true ? true : false;
 	},
 
+	makeKing: function(pos) {
+		if( (this.selectedIsRed() && this.lastRowBottom(pos)) || (this.selectedIsBlack() && this.lastRowTop(pos)) ){
+			this.selected.king = true;
+		}
+		return false;
+	},
+
 
 	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=- Single Move -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -252,12 +271,12 @@ var board = {
 		return this.selected.row == (this.state[pos].row - 2) ? true : false;
 	},
 
-	jump: function(pos) {
-		if ( this.opponentAhead() && this.jumpCheck(pos) && this.canJump(pos) ) {
-			if ( this.clickIsJumpUp(pos) && this.selected.color === "black" ) {
+	jump: function(startIndex,pos) {
+		if ( this.opponentAhead() && this.jumpCheck(startIndex,pos) && this.canJump(pos) ) {
+			if ( this.clickIsJumpUp(pos) && this.selectedIsBlack() ) {
 				return true;
 			}
-			if ( this.clickIsJumpDown(pos) && this.selected.color === "red" ) {
+			if ( this.clickIsJumpDown(pos) && this.selectedIsRed() ) {
 				return true;
 			}
 			if (this.selected.king && ( this.clickIsJumpUp(pos) || this.clickIsJumpDown(pos) ) ) {
@@ -287,8 +306,8 @@ var board = {
 		return this.capturedPosition(pos) != undefined ? true : false;
 	},
 
-	jumps: function(){
-		switch(this.selected.index) {
+	jumps: function(startIndex){
+		switch(startIndex) {
 		    case 0:
 		        return [1];
 		        break;
@@ -304,8 +323,58 @@ var board = {
 		}
 	},
 
-	jumpCheck: function(pos){
-		return this.jumps().indexOf(this.state[pos].index) > -1 ? true : false;
+	jumpCheck: function(startIndex,pos){
+		return this.jumps(startIndex).indexOf(this.state[pos].index) > -1 ? true : false;
+	},
+
+	//Helper function for canJumpAgain().
+	//Checks the spots in the next row to see if clear to jump again.
+	checkNextJumpSpots: function(jumpRow,nextJumps) {
+
+		if (nextJumps.length > 0) {
+			var check = false;
+			for(x in this.state){
+
+				if (this.state[x].row == jumpRow) {
+
+					var i = 0;
+					for ( ; i < nextJumps.length; i++){
+						if(board.state[x].index == nextJumps[i]){
+							if(board.state[x].color === "") {
+								console.log(board.state[x]);
+								check = true;
+							}
+						}
+					}
+
+				}
+			}
+		}
+		return check ? true : false;
+	},
+
+	canJumpAgain: function(pos) {
+		var jumpRow;
+		console.log('Can I jump again?');
+		console.log(this.jumps(this.state[pos].index) + ' Next jump indexes');
+
+		if ( this.selectedIsKing() ) {
+
+		} else if ( this.selectedIsRed() ) {
+
+			jumpRow = this.state[pos].row + 2;
+
+		} else if ( this.selectedIsBlack() ) {
+
+			jumpRow = this.state[pos].row - 2;
+		}
+		
+		if ( this.opponentAhead() && this.checkNextJumpSpots( jumpRow, this.jumps(this.state[pos].index) ) ){
+
+			return true;
+			
+		}
+		return false;
 	},
 
 	checkNextRow: function(pos) {
@@ -348,7 +417,7 @@ var board = {
 	isNum:function(num){
 		!isNaN(num) && num !== undefined ? true : false;
 	},
-	
+
 	//Check two diaganol spaces to see if opponent is there
 	opponentAhead: function() {
 		this.blackEnemyNear = [];
@@ -368,7 +437,7 @@ var board = {
 		var color = '';
 		if ( this.selectedIsKing() ){
 
-			this.selected.color === "red" ? color = "B" : color = "R";
+			this.selectedIsRed() ? color = "B" : color = "R";
 
 			moves = this.checkNextRow(this.selected.index);
 			index1 = moves[0];
@@ -527,18 +596,6 @@ var board = {
 
 	},
 
-	canJumpAgain: function() {
-		//After jump, Check to see if can jump again.
-		//All Jumps must been taken.
-	},
-
-	makeKing: function(pos) {
-		if( (this.selectedIsRed() && this.lastRowBottom(pos)) || (this.selectedIsBlack() && this.lastRowTop(pos)) ){
-			this.selected.king = true;
-		}
-		return false;
-	},
-
 }
 
 
@@ -628,7 +685,7 @@ $('.square').on('click', function(){
 	*	If piece selected and click on piece of same color.
 	*	Allow player to switch piece.
 	*/
-	if( !(board.isOpen(pos)) && board.legalMove(pos) && board.selected.color === board.getColor(pos) ){
+	if( !(board.isOpen(pos)) && board.legalMove(pos) && (board.selected.color === board.getColor(pos)) && !board.jumping ){
 		//Turn off selected state of previous piece
 		board.toggleSelected(board.selected.position);
 		//Store new piece position
@@ -659,7 +716,7 @@ $('.square').on('click', function(){
 
 	}
 
-	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.jump(pos) ) {
+	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.jump(board.selected.index,pos) ) {
 
 		//Clear previous position
 		board.removePiece(board.selected.position);
@@ -667,7 +724,7 @@ $('.square').on('click', function(){
 		//Remove Captured piece from piece count.
 		board.isCaptured( board.getColor( board.capturedPosition(pos) ) );
 
-		//Remove jumped piece.
+		//Remove Captured piece from board.
 		board.removePiece(board.capturedPosition(pos));
 
 		//Reached other side ? Make king : No.
@@ -676,8 +733,26 @@ $('.square').on('click', function(){
 		//Set piece in new position.
 		board.setPiece(pos);
 
+		//JUMP AGAIN?????
+		if ( board.canJumpAgain(pos) ) {
+			console.log('Jump Again')
+
+			//Store new piece position
+			board.storeClick(pos,board.selected.color);
+			//Toggle selected state for new piece.
+			board.toggleSelected(pos);
+
+			board.jumping = true;
+
+			return;
+		}
+		//???????????????
+		
+		board.jumping = false;
+		
 		//Clear Selected Object.
 		board.clearClick();
+
 		//Switch turn to next player.
 		board.toggleTurn();
 

@@ -52,4 +52,14 @@ h1 {
     background-color: transparent;
     box-shadow: none; }
 
+
+#messageBoard {
+  max-width:600px;
+  margin:0 auto;
+  color:firebrick;
+}
+#messageBoard p {
+  font-size:24px;
+  font-weight:bold;
+}
 /*# sourceMappingURL=style.css.map */
