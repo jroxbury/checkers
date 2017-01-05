@@ -4,14 +4,13 @@
 
 */
 
-
+//Select HTML entry point to build game board.
 var dom = $("#checkerBoard");
 
-//Need to make function to chage board state.
-//Set selected postion to empty
-//Add new piece/color to new positin.
+
 var board = {
 
+	//Current state of the board.
 	state: {
 		a2:{color:"R", row:1, index:0, king:false},
 		a4:{color:"R", row:1, index:1, king:false},
@@ -54,16 +53,22 @@ var board = {
 		h7:{color:"B", row:8, index:3, king:false},
 	},
 
+	//Current Selected Game Piece.
 	selected: {},
 
+	//Toggle if opponent in front.
 	enemyAhead: false,
 
+	//Store for near by opponent pieces.
 	redEnemyNear: [],
 
+	//Store for near by opponent pieces.
 	blackEnemyNear: [],
 
+	//Store for near by opponent pieces.
 	kingEnemyNear: [],
 
+	//Alternative reference for the rows.
 	rows: {
 		1:["a2","a4","a6","a8"],
 		2:["b1","b3","b5","b7"],
@@ -75,6 +80,7 @@ var board = {
 		8:["h1","h3","h5","h7"],
 	},
 
+	//Used to create the game board and set the pieces.
 	setup: {
 		row: ['a','b','c','d','e','f','g','h'],
 		col: ['1','2','3','4','5','6','7','8'],
@@ -82,15 +88,23 @@ var board = {
 		blackStart: ['f1','f3','f5','f7','g2','g4','g6','g8','h1','h3','h5','h7'],
 	},
 	
+	//All the legal positions.
 	legalSpaces: ["a2", "a4", "a6", "a8", "b1", "b3", "b5", "b7", "c2", "c4", "c6", "c8", "d1", "d3", "d5", "d7", "e2", "e4", "e6", "e8", "f1", "f3", "f5", "f7", "g2", "g4", "g6", "g8", "h1", "h3", "h5", "h7"],
+	
+	//Toggle for setting the board. Changes per row to have the checker board offset.
 	reverse: '',
+	//Toggle check for whos turn it is.
 	turn: true,
+	//Toggles to true if can jump again.
 	jumping: false,
+
+	//Keeping track of red pieces left and also the different html display for the red pieces.
 	red: {
 		pieces:12,
 		display:"<div data-color='red' class='red'></div>",
 		kingDisplay:"<div data-color='red' class='red'>&#9733;</div>",
 	},
+	//Keeping track of black pieces left and also the different html display for the black pieces.
 	black: {
 		pieces:12,
 		display:"<div data-color='black' class='black'></div>",
@@ -99,31 +113,65 @@ var board = {
 
 	/*=-=-=-=-=-=-=-=-=-=-=-=-=-= Dom Functions =-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 	
+	/**
+	 * Returns the data-position string attached to the clicked piece.
+	 * 
+	 * @param  object click The HTML div("game piece") clicked.
+	 * @return string       Position of piece clicked. Ex: "a2"
+	 */
 	getPosition: function(click){
 		return $(click).data("position");
 	},
 
+	/**
+	 * Set "selected" class(For display purposes)
+	 * 
+	 * @param  string pos Position clicked.
+	 * @return null
+	 */
 	toggleSelected: function(pos) {
 		$("[data-position=" + pos + "]").children().toggleClass("selected");
 	},
 
+	/**
+	 * Remove piece from HRML board and clears piece from JS object.
+	 * 
+	 * @param  string pos Position clicked.
+	 * @return null
+	 */
 	removePiece: function(pos) {
 		$("[data-position=" + pos + "]").children().fadeOut();
 		this.state[pos].color = "";
 		this.state[pos].king = false;
 	},
 
-
+	/**
+	 * To display game messages / alerts.
+	 * 
+	 * @param string selector Where in the HTML to append the message.
+	 * @param string msg      The game message / Alert to show.
+	 */
 	addMsg: function(selector,msg){
 		$(selector).append(msg);
 	},
+
+	/**
+	 * Remove the game message / alert after 2 seconds of being displayed.
+	 * 
+	 * @param  string selector Location where the message was appended.
+	 * @return null
+	 */
 	removeMsg: function(selector) {
 		setTimeout(function(){
 		    $(selector).children().fadeOut();
 		},2000)
 	},
 	
-
+	/**
+	 * After a player move, set the game piece in the new position.
+	 * 
+	 * @param string pos New position clicked.
+	 */
 	setPiece: function(pos) {
 		var color;
 		var king;
@@ -139,16 +187,35 @@ var board = {
 		}
 	},
 
+
 	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Checks =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+	/**
+	 * Checks if the click is an open space on the board.
+	 * 
+	 * @param  string  pos Position clicked.
+	 * @return Boolean
+	 */
 	isOpen: function(pos) {
 		return this.state[pos] != undefined && !(this.state[pos].color.length) ? true : false;
 	},
 
-	legalMove: function(position) {
-		return this.legalSpaces.indexOf(position) > -1 ? true : false;
+	/**
+	 * Make sure the click is a legal position, checks board.legalSpaces array.
+	 * 
+	 * @param  string pos Position Clicked
+	 * @return Boolean
+	 */
+	legalMove: function(pos) {
+		return this.legalSpaces.indexOf(pos) > -1 ? true : false;
 	},
 
+	/**
+	 * Checks which players turn it is. Red or Black.
+	 * 
+	 * @param  string color Color of current selected piece.
+	 * @return string       Returns the current players color.
+	 */
 	checkTurn: function(color) {
 		if (this.turn && color == "black") {
 			return "black";
@@ -158,17 +225,42 @@ var board = {
 		}
 	},
 
+	/**
+	 * Checks the board.state for the color of the position clicked.
+	 * 
+	 * @param  string pos Position clicked.
+	 * @return string    Returns the color of the position clicked.
+	 */
 	getColor: function (pos){
 		if( this.state[pos] != undefined && this.state[pos].color.length){
 			return this.state[pos].color === "R" ? "red" : "black";
 		}
 	},
+
+	/**
+	 * Toggles the board.state to the next player.
+	 * 
+	 * @return Boolean Toggles board.turn.
+	 */
 	toggleTurn: function(){
 		return this.turn === true ? this.turn = false : this.turn = true;
 	},
+
+	/**
+	 * Subtracts from the board.state for the color captured.
+	 * 
+	 * @param  string  color The color of the piece that was jumped over.
+	 * @return null.
+	 */
 	isCaptured: function(color) {
 		this[color].pieces -= 1;
 	},
+
+	/**
+	 * If Red/Black runs out of pieces, the game is over.
+	 * 
+	 * @return Boolean Returns false unless one players loses all pieces.
+	 */
 	isGameOver: function() {
 		if ( !(this.red.pieces) ){
 			alert('Black won!')
@@ -184,6 +276,13 @@ var board = {
 
 	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Selected State =-=-=-=-=-=-=-=-=-=-=-=-=-*/
 	
+	/**
+	 * Stores info of current selected piece.
+	 * 
+	 * @param  string   pos   Position clicked.
+	 * @param  string	color Color of position clicked.
+	 * @return null
+	 */
 	storeClick: function(pos,color) {
 		this.selected.position = pos;
 		this.selected.color = color;
@@ -192,22 +291,50 @@ var board = {
 		this.selected.king = this.state[pos].king;
 	},
 
+	/**
+	 * Clears the "Selected" Object.
+	 * 
+	 * @return null
+	 */
 	clearClick: function() {
 		this.selected = {
 			color:"",
 		};
 	},
 
+	/**
+	 * Checks if selected piece is black.
+	 * 
+	 * @return Boolean True if selected piece is black otherwise false.
+	 */
 	selectedIsBlack: function() {
 		return this.selected.color === "black" ? true : false;
 	},
+
+	/**
+	 * Checks if selected piece is red.
+	 * 
+	 * @return Boolean True if selected piece is red otherwise false.
+	 */
 	selectedIsRed: function() {
 		return this.selected.color === "red" ? true : false;
 	},
+
+	/**
+	 * Checks if selected piece is a King.
+	 * 
+	 * @return Boolean True if selected piece is a King otherwise false.
+	 */
 	selectedIsKing: function() {
 		return this.selected.king === true ? true : false;
 	},
 
+	/**
+	 * If player makes it to the last row, The piece is transformed into a King.
+	 * 
+	 * @param  string pos Position clicked.
+	 * @return Boolean    Sets the King switch for the selected piece.
+	 */
 	makeKing: function(pos) {
 		if( (this.selectedIsRed() && this.lastRowBottom(pos)) || (this.selectedIsBlack() && this.lastRowTop(pos)) ){
 			this.selected.king = true;
@@ -218,33 +345,83 @@ var board = {
 
 	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=- Single Move -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+	/**
+	 * Returns True if the click is the row above the selected piece.
+	 * 
+	 * @param  string pos Position clicked.
+	 * @return Boolean
+	 */
 	rowAbove: function(pos) {
 		return this.selected.row == (this.state[pos].row + 1) ? true : false;
 	},
+
+	/**
+	 * Returns True if the click is the row below the selected piece.
+	 * 
+	 * @param  string pos Position clicked.
+	 * @return Boolean
+	 */
 	rowBelow: function(pos) {
 		return this.selected.row == (this.state[pos].row - 1) ? true : false;
 	},
+
+	/**
+	 * Returns True if click is the last row (Row 1)
+	 * 
+	 * @param  string pos Position clicked.
+	 * @return Boolean
+	 */
 	lastRowTop:function(pos) {
 		return this.state[pos].row === 1 ? true : false;
 	},
+
+	/**
+	 * Returns True if click is the last row (Row 8)
+	 * 
+	 * @param  string pos Position clicked.
+	 * @return Boolean
+	 */
 	lastRowBottom:function(pos) {
 		return this.state[pos].row === 8 ? true : false;
 	},
+
+	/**
+	 * Returns True if the piece selected is currently within an even row.
+	 * 
+	 * @return Boolean
+	 */
 	evenRow: function() {
 		return !(this.selected.row % 2) ? true : false;
 	},
-	singleMove: function(pos) {
+
+	/**
+	 * Helper function for singleMove. Checks to make sure click is one of the two legal diagonal moves.
+	 * 
+	 * @param  string pos Position clicked.
+	 * @return Boolean
+	 */
+	isDiagnoal: function(pos) {
 		if( this.evenRow() ) {
-			return this.selected.index == this.state[pos].index  || this.selected.index == (this.state[pos].index + 1) ? true : false;
+			//If selected.index is same index as click or click index plus 1.
+			return this.selected.index == this.state[pos].index || (this.state[pos].index + 1) ? true : false;
 		}
 		if( !(this.evenRow()) ) {
-			return this.selected.index == this.state[pos].index  || this.selected.index == (this.state[pos].index - 1) ? true : false;
+			//If selected.index is same index as click or click index minus 1.
+			return this.selected.index == this.state[pos].index || (this.state[pos].index - 1) ? true : false;
 		}		
 		return false;
 	},
 
-	moveOneRow: function(pos) {
-		if ( this.singleMove(pos) ){
+	/**
+	 * Returns True if the click for a single move is legal.
+	 * Checks that is one of the two legal diagonal positions.
+	 * Checks based on Color/King Which direction the piece can move.
+	 * 
+	 * @param  string pos Position clicked.
+	 * @return Boolean
+	 */
+	singleMove: function(pos) {
+		if ( this.isDiagnoal(pos) ){
 
 			if ( !(this.selected.king) ) {
 
@@ -263,10 +440,25 @@ var board = {
 	},
 
 
+
 	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- Jump Logic -=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+	/**
+	 * Returns True if the click is a legal jump upwards.
+	 * 
+	 * @param  string pos Position clicked.
+	 * @return Boolean
+	 */
 	clickIsJumpUp: function(pos) {
 		return this.selected.row == (this.state[pos].row + 2) ? true : false;
 	},
+
+	/**
+	 * Returns True if the click is a legal jump downwards.
+	 * 
+	 * @param  string pos Position clicked.
+	 * @return Boolean
+	 */
 	clickIsJumpDown: function(pos) {
 		return this.selected.row == (this.state[pos].row - 2) ? true : false;
 	},
@@ -306,6 +498,12 @@ var board = {
 		return this.capturedPosition(pos) != undefined ? true : false;
 	},
 
+	/**
+	 * Returns an array of the possible jump indexes based on the current position.
+	 * 
+	 * @param  number startIndex The current position of the selected game piece.
+	 * @return array            The next available jump positions if possible.
+	 */
 	jumps: function(startIndex){
 		switch(startIndex) {
 		    case 0:
@@ -323,24 +521,44 @@ var board = {
 		}
 	},
 
+	/**
+	 * Checks to see if clicked position is in the array of next available jumps positions.
+	 * 
+	 * @param  number startIndex Current selected game piece index position.
+	 * @param  string pos        Position clicked.
+	 * @return Boolean            True or false if can jump.
+	 */
 	jumpCheck: function(startIndex,pos){
 		return this.jumps(startIndex).indexOf(this.state[pos].index) > -1 ? true : false;
 	},
 
-	//Helper function for canJumpAgain().
-	//Checks the spots in the next row to see if clear to jump again.
+	/**
+	 * Helper function for canJumpAgain().
+	 * Checks the spots in the next row to see if clear to jump again.
+	 * 
+	 * @param  array jumpRow   This is the next available row to jump to if possible.
+	 * @param  array nextJumps An array from jumps() - returns the next possible jump indexed based on current position.
+	 * @return Boolean          ture or false if there is more available jumps.
+	 */
 	checkNextJumpSpots: function(jumpRow,nextJumps) {
 
+		//Check to see that there is a row available to jump to.
 		if (nextJumps.length > 0) {
 			var check = false;
 			for(x in this.state){
 
+				//jumpRow is the next row that can be jumped to.
 				if (this.state[x].row == jumpRow) {
 
 					var i = 0;
+					//nextJumps is array of possible jumps based on current position.
 					for ( ; i < nextJumps.length; i++){
-						if(board.state[x].index == nextJumps[i]){
-							if(board.state[x].color === "") {
+
+						//Check the board state for available jumps position.
+						if ( board.state[x].index == nextJumps[i] ) {
+
+							//If the available position is open. Then yuo can jump there.
+							if ( board.state[x].color === "" ) {
 								console.log(board.state[x]);
 								check = true;
 							}
@@ -350,11 +568,12 @@ var board = {
 				}
 			}
 		}
+		//Return true if more possible jumps, otherwise false.
 		return check ? true : false;
 	},
 
 	canJumpAgain: function(pos) {
-		var jumpRow;
+		var jumpRow = '';
 		console.log('Can I jump again?');
 		console.log(this.jumps(this.state[pos].index) + ' Next jump indexes');
 
@@ -370,7 +589,7 @@ var board = {
 		}
 		
 		if ( this.opponentAhead() && this.checkNextJumpSpots( jumpRow, this.jumps(this.state[pos].index) ) ){
-
+			console.log('Yes I can jump again');
 			return true;
 			
 		}
@@ -435,6 +654,7 @@ var board = {
 		var topRow = '';
 		var bottomRow = '';
 		var color = '';
+		var check = false;
 		if ( this.selectedIsKing() ){
 
 			this.selectedIsRed() ? color = "B" : color = "R";
@@ -656,8 +876,12 @@ $.each(board.setup.blackStart, function(key,val) {
 
 $('.square').on('click', function(){
 	var _click = this;
+
+	console.log(typeof(_click))
+	console.log(_click)
 	//Get click position.
 	var pos = board.getPosition(_click);
+
 
 	/*
 	*	If player hasn't selected a piece yet.
@@ -696,7 +920,7 @@ $('.square').on('click', function(){
 	}
 
 	//Piece selected && click on open space && Legal position && Valid Move.
-	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.moveOneRow(pos) ) {
+	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.singleMove(pos) ) {
 
 		board.makeKing(pos);
 
@@ -739,6 +963,7 @@ $('.square').on('click', function(){
 
 			//Store new piece position
 			board.storeClick(pos,board.selected.color);
+
 			//Toggle selected state for new piece.
 			board.toggleSelected(pos);
 
