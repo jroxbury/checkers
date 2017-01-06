@@ -199,7 +199,7 @@ var board = {
 	 * @return Boolean
 	 */
 	isOpen: function(pos) {
-		return this.state[pos] != undefined && !(this.state[pos].color.length) ? true : false;
+		return this.state[pos] != undefined && !(this.state[pos].color.length);
 	},
 
 	/**
@@ -209,7 +209,7 @@ var board = {
 	 * @return Boolean
 	 */
 	legalMove: function(pos) {
-		return this.legalSpaces.indexOf(pos) > -1 ? true : false;
+		return this.legalSpaces.indexOf(pos) > -1;
 	},
 
 	/**
@@ -310,7 +310,7 @@ var board = {
 	 * @return Boolean True if selected piece is black otherwise false.
 	 */
 	selectedIsBlack: function() {
-		return this.selected.color === "black" ? true : false;
+		return this.selected.color === "black";
 	},
 
 	/**
@@ -319,7 +319,7 @@ var board = {
 	 * @return Boolean True if selected piece is red otherwise false.
 	 */
 	selectedIsRed: function() {
-		return this.selected.color === "red" ? true : false;
+		return this.selected.color === "red";
 	},
 
 	/**
@@ -328,7 +328,7 @@ var board = {
 	 * @return Boolean True if selected piece is a King otherwise false.
 	 */
 	selectedIsKing: function() {
-		return this.selected.king === true ? true : false;
+		return this.selected.king === true;
 	},
 
 	/**
@@ -354,7 +354,7 @@ var board = {
 	 * @return Boolean
 	 */
 	rowAbove: function(pos) {
-		return this.selected.row == (this.state[pos].row + 1) ? true : false;
+		return this.selected.row == (this.state[pos].row + 1);
 	},
 
 	/**
@@ -364,7 +364,7 @@ var board = {
 	 * @return Boolean
 	 */
 	rowBelow: function(pos) {
-		return this.selected.row == (this.state[pos].row - 1) ? true : false;
+		return this.selected.row == (this.state[pos].row - 1);
 	},
 
 	/**
@@ -374,7 +374,7 @@ var board = {
 	 * @return Boolean
 	 */
 	lastRowTop:function(pos) {
-		return this.state[pos].row === 1 ? true : false;
+		return this.state[pos].row === 1;
 	},
 
 	/**
@@ -384,7 +384,7 @@ var board = {
 	 * @return Boolean
 	 */
 	lastRowBottom:function(pos) {
-		return this.state[pos].row === 8 ? true : false;
+		return this.state[pos].row === 8;
 	},
 
 	/**
@@ -393,7 +393,7 @@ var board = {
 	 * @return Boolean
 	 */
 	evenRow: function() {
-		return !(this.selected.row % 2) ? true : false;
+		return !(this.selected.row % 2);
 	},
 
 	/**
@@ -405,11 +405,11 @@ var board = {
 	isDiagnoal: function(pos) {
 		if( this.evenRow() ) {
 			//If selected.index is same index as click or click index plus 1.
-			return this.selected.index == this.state[pos].index || this.selected.index == (this.state[pos].index + 1) ? true : false;
+			return this.selected.index == this.state[pos].index || this.selected.index == (this.state[pos].index + 1);
 		}
 		if( !(this.evenRow()) ) {
 			//If selected.index is same index as click or click index minus 1.
-			return this.selected.index == this.state[pos].index || this.selected.index == (this.state[pos].index - 1) ? true : false;
+			return this.selected.index == this.state[pos].index || this.selected.index == (this.state[pos].index - 1);
 		}		
 		return false;
 	},
@@ -452,7 +452,7 @@ var board = {
 	 * @return Boolean
 	 */
 	clickIsJumpUp: function(pos) {
-		return this.selected.row == (this.state[pos].row + 2) ? true : false;
+		return this.selected.row == (this.state[pos].row + 2);
 	},
 
 	/**
@@ -462,7 +462,7 @@ var board = {
 	 * @return Boolean
 	 */
 	clickIsJumpDown: function(pos) {
-		return this.selected.row == (this.state[pos].row - 2) ? true : false;
+		return this.selected.row == (this.state[pos].row - 2);
 	},
 
 	jump: function(startIndex,pos) {
@@ -511,7 +511,7 @@ var board = {
 	 * @return Boolean
 	 */
 	canJump:function (pos) {
-		return this.capturedPosition(pos) != undefined ? true : false;
+		return this.capturedPosition(pos) != undefined;
 	},
 
 	/**
@@ -545,7 +545,7 @@ var board = {
 	 * @return Boolean            True or false if can jump.
 	 */
 	jumpCheck: function(startIndex,pos){
-		return this.jumps(startIndex).indexOf(this.state[pos].index) > -1 ? true : false;
+		return this.jumps(startIndex).indexOf(this.state[pos].index) > -1;
 	},
 
 	/**
@@ -573,7 +573,7 @@ var board = {
 						//Check the board state for available jumps position.
 						if ( board.state[x].index == nextJumps[i] ) {
 
-							//If the available position is open. Then yuo can jump there.
+							//If the available position is open. Then you can jump there.
 							if ( board.state[x].color === "" ) {
 								console.log(board.state[x]);
 								check = true;
@@ -585,7 +585,7 @@ var board = {
 			}
 		}
 		//Return true if more possible jumps, otherwise false.
-		return check ? true : false;
+		return check;
 	},
 
 	canJumpAgain: function(pos) {
@@ -668,7 +668,7 @@ var board = {
 	 * @return Boolean     Returns True is a number.
 	 */
 	isNum:function(num){
-		!isNaN(num) && num !== undefined ? true : false;
+		!isNaN(num) && num !== undefined;
 	},
 
 	//Check two diaganol spaces to see if opponent is there
@@ -765,7 +765,7 @@ var board = {
 				this.kingEnemyNear.push({});
 			}
 
-			return check ? true : false;
+			return check;
 			
 		}
 
@@ -806,7 +806,7 @@ var board = {
 				this.redEnemyNear.push({});
 			}
 
-			return check ? true : false;
+			return check;
 
 		}
 
@@ -845,7 +845,7 @@ var board = {
 				this.blackEnemyNear.push({});
 			}
 
-			return check ? true : false;
+			return check;
 
 		}
 
@@ -1006,7 +1006,7 @@ $('.square').on('click', function(){
 			if ( !board.opponentAhead() ) {
 
 				board.toggleSelected(pos);
-				
+
 				board.jumping = false;
 				
 				//Clear Selected Object.
