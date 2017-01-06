@@ -140,7 +140,9 @@ var board = {
 	 * @return null
 	 */
 	removePiece: function(pos) {
-		$("[data-position=" + pos + "]").children().fadeOut();
+		$("[data-position=" + pos + "]").children().fadeOut(function(){
+			$(this).remove()
+		});
 		this.state[pos].color = "";
 		this.state[pos].king = false;
 	},
@@ -403,11 +405,11 @@ var board = {
 	isDiagnoal: function(pos) {
 		if( this.evenRow() ) {
 			//If selected.index is same index as click or click index plus 1.
-			return this.selected.index == this.state[pos].index || (this.state[pos].index + 1) ? true : false;
+			return this.selected.index == this.state[pos].index || this.selected.index == (this.state[pos].index + 1) ? true : false;
 		}
 		if( !(this.evenRow()) ) {
 			//If selected.index is same index as click or click index minus 1.
-			return this.selected.index == this.state[pos].index || (this.state[pos].index - 1) ? true : false;
+			return this.selected.index == this.state[pos].index || this.selected.index == (this.state[pos].index - 1) ? true : false;
 		}		
 		return false;
 	},
@@ -477,6 +479,12 @@ var board = {
 		}
 	},
 
+	/**
+	 * On a jump this returns the position of the enemy that was jumped over.
+	 * 
+	 * @param  string pos Position clicked.
+	 * @return string     Position of the game piece that was jumped over.
+	 */
 	capturedPosition: function(pos) {
 
 		if ( this.selectedIsKing() ){
@@ -494,6 +502,13 @@ var board = {
 			return this.state[pos].index >= this.selected.index ? this.blackEnemyNear[1].pos : this.blackEnemyNear[0].pos;
 		}
 	},
+
+	/**
+	 * Returns True if the jump is actually jumping an opponent.
+	 * 
+	 * @param  string pos Position clicked.
+	 * @return Boolean
+	 */
 	canJump:function (pos) {
 		return this.capturedPosition(pos) != undefined ? true : false;
 	},
@@ -573,6 +588,7 @@ var board = {
 	},
 
 	canJumpAgain: function(pos) {
+
 		var jumpRow = '';
 		console.log('Can I jump again?');
 		console.log(this.jumps(this.state[pos].index) + ' Next jump indexes');
@@ -588,6 +604,12 @@ var board = {
 			jumpRow = this.state[pos].row - 2;
 		}
 		
+		console.log(jumpRow,'jump row')
+
+		console.log(this.opponentAhead());
+		console.log(pos)
+
+		// if ( this.checkNextJumpSpots( jumpRow, this.jumps(this.state[pos].index) ) ){
 		if ( this.opponentAhead() && this.checkNextJumpSpots( jumpRow, this.jumps(this.state[pos].index) ) ){
 			console.log('Yes I can jump again');
 			return true;
@@ -596,6 +618,12 @@ var board = {
 		return false;
 	},
 
+	/**
+	 * This returns an array of the next possible single diagonal moves based on the row and position.
+	 * 
+	 * @param  string pos Position clicked.
+	 * @return Array     An Array of next possible diagonal moves.
+	 */
 	checkNextRow: function(pos) {
 		if ( this.evenRow() ){
 
@@ -633,6 +661,12 @@ var board = {
 		}
 	},
 
+	/**
+	 * Checks is arg passed is a number.
+	 * 
+	 * @param  number  num  Arg that is Expected number
+	 * @return Boolean     Returns True is a number.
+	 */
 	isNum:function(num){
 		!isNaN(num) && num !== undefined ? true : false;
 	},
@@ -736,6 +770,7 @@ var board = {
 		}
 
 		if ( this.selectedIsBlack() ){
+
 			topRow = this.selected.row - 1;
 			
 			moves = this.checkNextRow(this.selected.index);
@@ -877,11 +912,8 @@ $.each(board.setup.blackStart, function(key,val) {
 $('.square').on('click', function(){
 	var _click = this;
 
-	console.log(typeof(_click))
-	console.log(_click)
 	//Get click position.
 	var pos = board.getPosition(_click);
-
 
 	/*
 	*	If player hasn't selected a piece yet.
@@ -959,6 +991,7 @@ $('.square').on('click', function(){
 
 		//JUMP AGAIN?????
 		if ( board.canJumpAgain(pos) ) {
+
 			console.log('Jump Again')
 
 			//Store new piece position
