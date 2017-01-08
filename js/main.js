@@ -467,7 +467,7 @@ var board = {
 
 	jump: function(startIndex,pos) {
 		if ( this.opponentAhead() && this.jumpCheck(startIndex,pos) && this.canJump(pos) ) {
-			console.log('Jump Function')
+			
 			if ( this.clickIsJumpUp(pos) && this.selectedIsBlack() ) {
 				return true;
 			}
@@ -489,7 +489,7 @@ var board = {
 	capturedPosition: function(pos) {
 
 		if ( this.selectedIsKing() ){
-
+			
 			if (this.state[pos].row > this.selected.row) {
 				return this.state[pos].index >= this.selected.index ? this.kingEnemyNear[3].pos : this.kingEnemyNear[2].pos;
 			}else {
@@ -573,14 +573,13 @@ var board = {
 						//Check the board state for available jumps position.
 						if ( board.state[x].index == nextJumps[i] ) {
 
-							//If the available position is open. Then you can jump there.
-							if ( board.state[x].color === "" ) {
-								console.log(board.state[x]);
+							//If the available position is open and there is an opponent to jump, then you can jump there.
+							if ( board.state[x].color === "" && this.canJump(x) ) {
+								
 								check = true;
 							}
 						}
 					}
-
 				}
 			}
 		}
@@ -591,8 +590,6 @@ var board = {
 	canJumpAgain: function(pos) {
 
 		var jumpRow = [];
-
-		console.log(this.jumps(this.state[pos].index) + ' Next jump indexes');
 
 		if ( this.selectedIsKing() ) {
 
@@ -607,13 +604,8 @@ var board = {
 			jumpRow.push(this.state[pos].row - 2);
 		}
 		
-		console.log(jumpRow,'jump row')
-
 		if ( this.checkNextJumpSpots( jumpRow, this.jumps(this.state[pos].index) ) ){
-		// if ( this.opponentAhead() && this.checkNextJumpSpots( jumpRow, this.jumps(this.state[pos].index) ) ){
-			console.log('opponentAhead canJumpAgain Function');
 			return true;
-			
 		}
 		return false;
 	},
@@ -973,7 +965,7 @@ $('.square').on('click', function(){
 	}
 
 	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.jump(board.selected.index,pos) ) {
-		console.log('JUMP ORDER 1')
+		
 		//Clear previous position
 		board.removePiece(board.selected.position);
 
@@ -989,17 +981,19 @@ $('.square').on('click', function(){
 		//Set piece in new position.
 		board.setPiece(pos);
 
+		//Store new piece position
+		board.storeClick(pos,board.selected.color);
+
+		//Toggle selected state for new piece.
+		board.toggleSelected(pos);
+
+		board.opponentAhead();
+
+		
 		//JUMP AGAIN?????
 		if ( board.canJumpAgain(pos) ) {
 
-			console.log('Jump Again')
-
-
-			//Store new piece position
-			board.storeClick(pos,board.selected.color);
-
-			//Toggle selected state for new piece.
-			board.toggleSelected(pos);
+			
 
 			board.jumping = true;
 
@@ -1022,6 +1016,8 @@ $('.square').on('click', function(){
 			return;
 		}
 		//???????????????
+		
+		board.toggleSelected(pos);
 		
 		board.jumping = false;
 		
