@@ -68,6 +68,8 @@ var board = {
 	//Store for near by opponent pieces.
 	kingEnemyNear: [],
 
+	forcedJumps: [],
+
 	//Alternative reference for the rows.
 	rows: {
 		1:["a2","a4","a6","a8"],
@@ -610,6 +612,61 @@ var board = {
 		return false;
 	},
 
+	redPositions: function(){
+		var redPieces = [];
+		for (var pos in this.state){
+			if (this.state[pos].color === "R"){
+				redPieces.push(pos);
+			}
+		}
+		return redPieces;
+	},
+	blackPositions: function(){
+		var blackPieces = [];
+		for (var pos in this.state){
+			if (this.state[pos].color === "B"){
+				blackPieces.push(pos);
+			}
+		}
+		return blackPieces;
+	},
+
+	isForcedJump: function(pos){
+		if(this.turn) {
+			this.blackPositions().forEach(function(val){
+				board.storeClick(val,'black');
+				if( board.opponentAhead() ){
+					if ( board.canJumpAgain(val) ){
+						if (!board.forceJumpSelection(val)){
+							board.forcedJumps.push(val);
+						}
+					}
+				}
+				board.clearClick();
+			})
+		}else {
+			this.redPositions().forEach(function(val){
+				board.storeClick(val,'red');
+				if( board.opponentAhead() ){
+					if ( board.canJumpAgain(val) ){
+						if (!board.forceJumpSelection(val)){
+							board.forcedJumps.push(val);
+						}
+					}
+				}
+				board.clearClick();
+			})
+		}
+	},
+
+	forceJumpSelection: function(pos){
+		return this.forcedJumps.indexOf(pos) > -1;
+	},
+
+	clearForcedJumps: function(){
+		this.forcedJumps = [];
+	},
+
 	/**
 	 * This returns an array of the next possible single diagonal moves based on the row and position.
 	 * 
@@ -907,11 +964,33 @@ $('.square').on('click', function(){
 	//Get click position.
 	var pos = board.getPosition(_click);
 
+	if(board.selected.position == undefined){
+		board.isForcedJump(pos);
+	}
+	
 	/*
 	*	If player hasn't selected a piece yet.
 	*	If valid position && Piece not yet selected.
 	*/
-	if ( board.legalMove(pos) && !(board.selected.position) && !(board.isOpen(pos)) ){
+	if ( board.legalMove(pos) && !(board.selected.position) && !(board.isOpen(pos)) && !(board.forcedJumps.length) ){
+
+		//Return click color.
+		var color = board.getColor(pos);
+
+		//Black turn && Black click || Red Turn && Red click.
+		if ( board.checkTurn(color) ) {
+
+			//Store inital click position.
+			board.storeClick(pos,color);
+
+			//Toggle CSS selected state.
+			board.toggleSelected(pos);
+
+			return;
+		}
+	}
+
+	if ( board.legalMove(pos) && !(board.selected.position) && !(board.isOpen(pos)) && board.forceJumpSelection(pos) ){
 
 		//Return click color.
 		var color = board.getColor(pos);
@@ -933,7 +1012,17 @@ $('.square').on('click', function(){
 	*	If piece selected and click on piece of same color.
 	*	Allow player to switch piece.
 	*/
-	if( !(board.isOpen(pos)) && board.legalMove(pos) && (board.selected.color === board.getColor(pos)) && !board.jumping ){
+	if( !(board.isOpen(pos)) && board.legalMove(pos) && (board.selected.color === board.getColor(pos)) && !board.jumping && !(board.forcedJumps.length) ){
+		//Turn off selected state of previous piece
+		board.toggleSelected(board.selected.position);
+		//Store new piece position
+		board.storeClick(pos,board.selected.color);
+		//Toggle selected state for new piece.
+		board.toggleSelected(pos);
+		return;
+	}
+
+	if( !(board.isOpen(pos)) && board.legalMove(pos) && (board.selected.color === board.getColor(pos)) && !board.jumping && board.forceJumpSelection(pos) ){
 		//Turn off selected state of previous piece
 		board.toggleSelected(board.selected.position);
 		//Store new piece position
@@ -958,6 +1047,8 @@ $('.square').on('click', function(){
 		board.clearClick();
 		//Switch turn to next player.
 		board.toggleTurn();
+
+		board.clearForcedJumps();
 
 		//Check if game is over.
 		board.isGameOver();
@@ -1009,6 +1100,8 @@ $('.square').on('click', function(){
 				//Switch turn to next player.
 				board.toggleTurn();
 
+				board.clearForcedJumps();
+
 				//Check if game is over.
 				board.isGameOver();
 			}
@@ -1026,6 +1119,8 @@ $('.square').on('click', function(){
 
 		//Switch turn to next player.
 		board.toggleTurn();
+
+		board.clearForcedJumps();
 
 		//Check if game is over.
 		board.isGameOver();
