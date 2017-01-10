@@ -135,6 +135,12 @@ var board = {
 		$("[data-position=" + pos + "]").children().toggleClass("selected");
 	},
 
+	togglePossibleMove: function(positionArray) {
+		positionArray.forEach(function(val){
+			$("[data-position=" + val + "]").children().toggleClass("possible");
+		})
+	},
+
 	/**
 	 * Remove piece from HRML board and clears piece from JS object.
 	 * 
@@ -964,9 +970,9 @@ $('.square').on('click', function(){
 	//Get click position.
 	var pos = board.getPosition(_click);
 
-	if(board.selected.position == undefined){
-		board.isForcedJump(pos);
-	}
+	board.togglePossibleMove(board.forcedJumps);
+	
+	board.clearForcedJumps();
 	
 	/*
 	*	If player hasn't selected a piece yet.
@@ -1045,10 +1051,14 @@ $('.square').on('click', function(){
 
 		//Clear Selected Object.
 		board.clearClick();
+
 		//Switch turn to next player.
 		board.toggleTurn();
 
-		board.clearForcedJumps();
+		if(board.selected.position == undefined){
+			board.isForcedJump(pos);
+			board.togglePossibleMove(board.forcedJumps);
+		}
 
 		//Check if game is over.
 		board.isGameOver();
@@ -1084,8 +1094,6 @@ $('.square').on('click', function(){
 		//JUMP AGAIN?????
 		if ( board.canJumpAgain(pos) ) {
 
-			
-
 			board.jumping = true;
 
 			if ( !board.opponentAhead() ) {
@@ -1100,7 +1108,10 @@ $('.square').on('click', function(){
 				//Switch turn to next player.
 				board.toggleTurn();
 
-				board.clearForcedJumps();
+				if(board.selected.position == undefined){
+					board.isForcedJump(pos);
+					board.togglePossibleMove(board.forcedJumps);
+				}
 
 				//Check if game is over.
 				board.isGameOver();
@@ -1120,7 +1131,10 @@ $('.square').on('click', function(){
 		//Switch turn to next player.
 		board.toggleTurn();
 
-		board.clearForcedJumps();
+		if(board.selected.position == undefined){
+			board.isForcedJump(pos);
+			board.togglePossibleMove(board.forcedJumps);
+		}
 
 		//Check if game is over.
 		board.isGameOver();
