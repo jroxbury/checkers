@@ -969,10 +969,6 @@ $('.square').on('click', function(){
 
 	//Get click position.
 	var pos = board.getPosition(_click);
-
-	board.togglePossibleMove(board.forcedJumps);
-	
-	board.clearForcedJumps();
 	
 	/*
 	*	If player hasn't selected a piece yet.
@@ -996,6 +992,7 @@ $('.square').on('click', function(){
 		}
 	}
 
+	// If its a Forced Jump Selection && player hasn't selected a piece yet.
 	if ( board.legalMove(pos) && !(board.selected.position) && !(board.isOpen(pos)) && board.forceJumpSelection(pos) ){
 
 		//Return click color.
@@ -1007,6 +1004,9 @@ $('.square').on('click', function(){
 			//Store inital click position.
 			board.storeClick(pos,color);
 
+			//Remove Force Jump CSS Indication
+			board.togglePossibleMove(board.forcedJumps);
+
 			//Toggle CSS selected state.
 			board.toggleSelected(pos);
 
@@ -1015,7 +1015,7 @@ $('.square').on('click', function(){
 	}
 
 	/*
-	*	If piece selected and click on piece of same color.
+	*	If piece selected and click on piece of same color and not a forced jump selection.
 	*	Allow player to switch piece.
 	*/
 	if( !(board.isOpen(pos)) && board.legalMove(pos) && (board.selected.color === board.getColor(pos)) && !board.jumping && !(board.forcedJumps.length) ){
@@ -1028,6 +1028,10 @@ $('.square').on('click', function(){
 		return;
 	}
 
+	/*
+	*	If it is a Forced Piece Selection.
+	*	Allow player to switch only between piece that are Forced jumps.
+	*/
 	if( !(board.isOpen(pos)) && board.legalMove(pos) && (board.selected.color === board.getColor(pos)) && !board.jumping && board.forceJumpSelection(pos) ){
 		//Turn off selected state of previous piece
 		board.toggleSelected(board.selected.position);
@@ -1038,8 +1042,9 @@ $('.square').on('click', function(){
 		return;
 	}
 
-	//Piece selected && click on open space && Legal position && Valid Move.
-	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.singleMove(pos) ) {
+	// Standard Move(1 space diaganol)
+	// Piece selected && click on open space && Legal position && Valid Move && Its not a Forced Jump.
+	if( board.selected.position && board.isOpen(pos) && board.legalMove(pos) && board.singleMove(pos) && !(board.forcedJumps.length) ) {
 
 		board.makeKing(pos);
 
@@ -1108,6 +1113,10 @@ $('.square').on('click', function(){
 				//Switch turn to next player.
 				board.toggleTurn();
 
+				if(board.forcedJumps.length){
+					board.clearForcedJumps();
+				}
+
 				if(board.selected.position == undefined){
 					board.isForcedJump(pos);
 					board.togglePossibleMove(board.forcedJumps);
@@ -1130,6 +1139,10 @@ $('.square').on('click', function(){
 
 		//Switch turn to next player.
 		board.toggleTurn();
+
+		if(board.forcedJumps.length){
+			board.clearForcedJumps();
+		}
 
 		if(board.selected.position == undefined){
 			board.isForcedJump(pos);
